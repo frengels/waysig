@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <type_traits>
 
@@ -9,10 +10,6 @@ namespace ws
 {
 namespace detail
 {
-template<typename T>
-struct link_offset : std::integral_constant<std::size_t, T::link_offset>
-{};
-
 template<typename T>
 class intrusive_list
 {
@@ -29,6 +26,68 @@ private:
     static constexpr std::size_t link_offset_ =
         ws::detail::link_offset<T>::value;
 
+public:
+    class iterator
+    {
+    public:
+        using value_type      = T;
+        using reference       = T&;
+        using pointer         = T*;
+        using difference_type = std::ptrdiff_t;
+        // only implement forward to ensure safe removal of elements whilst
+        // iterating
+        using iterator_category = std::forward_iterator_tag;
+
+    private:
+        ws::detail::link* current_{nullptr};
+        ws::detail::link* next_{nullptr};
+
+    public:
+        constexpr iterator() noexcept = default;
+        constexpr iterator(ws::detail::link* curr) noexcept
+            : current_{curr}, next_{current_->next}
+        {}
+
+        constexpr bool operator==(const iterator& other) const noexcept
+        {
+            return current_ == other.current_;
+        }
+
+        constexpr bool operator!=(const iterator& other) const noexcept
+        {
+            return current_ != other.current_;
+        }
+
+        constexpr iterator& operator++() noexcept
+        {
+            // this first assignment is essential. Because if the element at
+            // current removed itself then next for this element will be nullptr
+            // and we'd segfault.
+            current_ = next_;
+            next_    = next_->next;
+            return *this;
+        }
+
+        constexpr iterator operator++(int) noexcept
+        {
+            auto res = *this;
+            ++(*this);
+            return res;
+        }
+
+        constexpr reference operator*() const noexcept
+        {
+            auto& res = current_->template get<T>();
+            return res;
+        }
+
+        constexpr pointer operator->() const noexcept
+        {
+            auto* res = current_->template ptr<T>();
+            return res;
+        }
+    };
+
 private:
     ws::detail::link link_;
 
@@ -36,15 +95,26 @@ public:
     constexpr intrusive_list() noexcept : link_{&link_, &link_}
     {}
 
+    constexpr iterator begin() noexcept
+    {
+        return iterator{link_.next};
+    }
+
+    constexpr iterator end() noexcept
+    {
+        // TODO consider replacing this with sentinel type to make this lighter
+        return iterator{&link_};
+    }
+
     constexpr bool empty() const noexcept
     {
-        // identical to wayland implementation
+        // identical to wayland implementation wl_list_empty
         return link_.next == &link_;
     }
 
     constexpr size_type size() const noexcept
     {
-        // identical to wayland implementation
+        // identical to wayland implementation wl_list_len
         size_type count{0};
         auto*     e = link_.next;
 
@@ -59,10 +129,7 @@ public:
 
     constexpr void push_front(reference ref) noexcept
     {
-        // obtain the location of the link within this structure
-        auto* byte_ptr = reinterpret_cast<unsigned char*>(std::addressof(ref));
-        byte_ptr += link_offset_; // this is it, back to link now
-        ws::detail::link* l = reinterpret_cast<ws::detail::link*>(byte_ptr);
+        ws::detail::link* l = ws::detail::link::from(ref);
 
         // from here on identical to wayland (wl_list_insert)
         l->prev       = &link_;
@@ -73,6 +140,8 @@ public:
 
     constexpr void insert_list(intrusive_list& other) noexcept
     {
+        // identical to wl_list_insert_list
+
         if (other.empty())
         {
             return;

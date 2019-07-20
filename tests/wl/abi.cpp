@@ -5,6 +5,7 @@
 #include <wayland-server-core.h>
 #include <wayland-util.h>
 
+#include "waysig/detail/intrusive_list.hpp"
 #include "waysig/detail/link.hpp"
 #include "waysig/slot.hpp"
 
@@ -23,13 +24,26 @@ TEST_CASE("wayland")
                           offsetof(ws::detail::link, next));
         }
 
+        SECTION("list")
+        {
+            static_assert(sizeof(wl_list) ==
+                          sizeof(ws::detail::intrusive_list<int>));
+            static_assert(alignof(wl_list) ==
+                          alignof(ws::detail::intrusive_list<int>));
+            // these 2 properties are enough to ensure binary compatibility. The
+            // underlying object to intrusive list has already been checked for
+            // ABI.
+        }
+
         SECTION("listener")
         {
             static_assert(sizeof(wl_listener) == sizeof(ws::slot_base_impl));
             static_assert(alignof(wl_listener) == alignof(ws::slot_base_impl));
 
-            static_assert(offsetof(wl_listener, link) ==
-                          0); // 0 is the offset of the base in inheritance
+            static_assert(
+                offsetof(wl_listener, link) ==
+                offsetof(ws::slot_base_impl,
+                         link)); // 0 is the offset of the base in inheritance
             static_assert(offsetof(wl_listener, notify) ==
                           offsetof(ws::slot_base_impl, func));
 

@@ -18,7 +18,7 @@ struct slot_base
 
 public:
     using return_type   = Ret;
-    using function_type = return_type (*)(slot_base*, void* data);
+    using function_type = return_type (*)(slot_base<return_type>*, void* data);
 
 public:
     ws::detail::link link{};

@@ -12,6 +12,10 @@ project(
 
 waysig_inc = include_directories('include')
 
+waysig_dep = declare_dependency(
+    include_directories: [ waysig_inc ],
+)
+
 if get_option('tests')
     catch2_dep = dependency('catch2')
     subdir('tests')

@@ -27,6 +27,8 @@ private:
         ws::detail::link_offset<T>::value;
 
 public:
+    class sentinel;
+
     class iterator
     {
         friend class sentinel;
@@ -93,12 +95,13 @@ public:
     class sentinel
     {
     private:
-        ws::detail::link* end_{nullptr};
+        const ws::detail::link* end_{nullptr};
 
     public:
         constexpr sentinel() noexcept = default;
 
-        explicit constexpr sentinel(ws::detail::link* end) noexcept : end_{end}
+        explicit constexpr sentinel(const ws::detail::link* end) noexcept
+            : end_{end}
         {}
 
         constexpr bool operator==(const sentinel& other) const noexcept
@@ -124,13 +127,13 @@ public:
         friend constexpr bool operator==(const iterator& it,
                                          const sentinel& sent) noexcept
         {
-            return it.current_ == sent.end_;
+            return sent == it;
         }
 
         friend constexpr bool operator!=(const iterator& it,
                                          const sentinel& sent) noexcept
         {
-            return it.current_ != sent.end_;
+            return sent != it;
         }
     };
 

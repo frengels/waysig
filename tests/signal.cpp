@@ -1,23 +1,24 @@
 #include <catch2/catch.hpp>
 
-#include "waysig/signal.hpp"
+#include "waysig/detail/signal_base.hpp"
+#include "waysig/detail/slot_base.hpp"
 
 TEST_CASE("signal")
 {
     int i = 0;
 
-    ws::signal_base sig;
+    ws::detail::signal_base sig;
 
-    ws::slot_base_impl s0{[](auto* self, void* data) {
+    ws::detail::slot_base s0{[](auto* self, void* data) {
         (void) self;
-        auto& tup = *static_cast<std::tuple<int&>*>(data);
-        ++std::get<0>(tup);
+        auto& i = *static_cast<int*>(data);
+        ++i;
     }};
 
     REQUIRE(i == 0);
-    sig(i);
+    sig(&i);
     REQUIRE(i == 0);
     sig.connect(s0);
-    sig(i);
+    sig(&i);
     REQUIRE(i == 1);
 }

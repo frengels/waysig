@@ -7,6 +7,10 @@
 
 namespace ws
 {
+/// this class is binary compatible with wl_listener (checked through unit
+/// tests). Meaning this and any class derived from this can be used as a
+/// drop-in replacement for wl_listener. Allowing us to take full advantage of
+/// c++'s type safety features.
 struct slot_base_impl
 {
 public:

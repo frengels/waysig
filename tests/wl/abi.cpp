@@ -7,6 +7,7 @@
 
 #include "waysig/detail/intrusive_list.hpp"
 #include "waysig/detail/link.hpp"
+#include "waysig/signal.hpp"
 #include "waysig/slot.hpp"
 
 TEST_CASE("wayland")
@@ -49,6 +50,15 @@ TEST_CASE("wayland")
 
             // since the layout of the 2 listener types are the same, the
             // function pointers will be able to interoperate.
+        }
+
+        SECTION("signal")
+        {
+            static_assert(sizeof(wl_signal) == sizeof(ws::signal_base));
+            static_assert(alignof(wl_signal) == alignof(ws::signal_base));
+
+            static_assert(offsetof(wl_signal, listener_list) ==
+                          offsetof(ws::signal_base, slot_list));
         }
     }
 }

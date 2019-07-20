@@ -28,6 +28,11 @@ public:
     constexpr link(link* prev, link* next) noexcept : prev{prev}, next{next}
     {}
 
+    ~link()
+    {
+        remove();
+    }
+
     constexpr void remove() noexcept
     {
         // identical to wayland implementation

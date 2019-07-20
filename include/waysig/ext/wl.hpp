@@ -19,8 +19,12 @@ void connect(wl_signal& sig, wl_listener& listener) noexcept
     wl_signal_add(&sig, &listener);
 }
 
-void connect(wl_signal& sig, ws::detail::slot_base& slot) noexcept
+template<typename T>
+void connect(wl_signal& sig, ws::detail::slot_base<T>& slot) noexcept
 {
+    static_assert(
+        std::is_same_v<void, T>,
+        "Cannot connect slot_base<T> with non void return type to wl_signal");
     static_assert(
         ws::detail::is_slot_layout_compatible_v,
         "Slot binary layouts are not compatible, interop is not allowed");
@@ -28,8 +32,12 @@ void connect(wl_signal& sig, ws::detail::slot_base& slot) noexcept
     wl_signal_add(&sig, slot_cast);
 }
 
-void connect(ws::detail::signal_base& sig, wl_listener& listener) noexcept
+template<typename T>
+void connect(ws::detail::signal_base<T>& sig, wl_listener& listener) noexcept
 {
+    static_assert(
+        std::is_same_v<void, T>,
+        "Cannot connect wl_listener to signal expecting non void return type");
     static_assert(
         ws::detail::is_signal_layout_compatible_v,
         "Signal binary layouts are not compatible, interop is not allowed");

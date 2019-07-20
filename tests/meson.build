@@ -1,4 +1,6 @@
-tests = []
+tests = [
+    'signal',
+]
 
 wayland_tests = [
     'wl/abi',

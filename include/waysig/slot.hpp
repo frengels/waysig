@@ -6,12 +6,16 @@
 
 namespace ws
 {
-struct slot_base_impl : detail::link
+struct slot_base_impl
 {
+public:
     using function_type = void (*)(slot_base_impl*, void* data);
 
-    function_type func;
+public:
+    ws::detail::link link;
+    function_type    func;
 
+public:
     constexpr void operator()(void* data)
     {
         func(this, data);

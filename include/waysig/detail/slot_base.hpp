@@ -17,8 +17,8 @@ struct slot_base
     friend class ws::detail::link_offset<slot_base<Ret>>;
 
 public:
-    using return_type   = Ret;
-    using function_type = return_type (*)(slot_base<return_type>*, void* data);
+    using result_type   = Ret;
+    using function_type = result_type (*)(slot_base<result_type>*, void* data);
 
 public:
     ws::detail::link link{};
@@ -29,7 +29,7 @@ public:
     constexpr slot_base(function_type fn) noexcept : func{fn}
     {}
 
-    constexpr return_type operator()(void* data) noexcept
+    constexpr result_type operator()(void* data) noexcept
     {
         return func(this, data);
     }

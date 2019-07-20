@@ -11,15 +11,15 @@ template<typename Ret = void>
 struct signal_base
 {
 public:
-    using return_type = Ret;
+    using result_type = Ret;
 
 public:
-    ws::detail::intrusive_list<ws::detail::slot_base<return_type>> slot_list;
+    ws::detail::intrusive_list<ws::detail::slot_base<result_type>> slot_list;
 
 public:
     constexpr signal_base() noexcept = default;
 
-    constexpr void connect(ws::detail::slot_base<return_type>& slot) noexcept
+    constexpr void connect(ws::detail::slot_base<result_type>& slot) noexcept
     {
         slot_list.push_front(slot);
     }
@@ -39,7 +39,7 @@ public:
     // results into the vector. Only participates in overload resolution when
     // the slot return type is non void.
     template<typename OutputIt>
-    constexpr std::enable_if_t<!std::is_same_v<void, return_type>>
+    constexpr std::enable_if_t<!std::is_same_v<void, result_type>>
     emit_collect(OutputIt out, void* data) noexcept
     {
         auto end = slot_list.end();

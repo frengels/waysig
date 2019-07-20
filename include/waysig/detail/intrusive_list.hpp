@@ -29,6 +29,8 @@ private:
 public:
     class iterator
     {
+        friend class sentinel;
+
     public:
         using value_type      = T;
         using reference       = T&;
@@ -44,7 +46,7 @@ public:
 
     public:
         constexpr iterator() noexcept = default;
-        constexpr iterator(ws::detail::link* curr) noexcept
+        explicit constexpr iterator(ws::detail::link* curr) noexcept
             : current_{curr}, next_{current_->next}
         {}
 
@@ -88,6 +90,50 @@ public:
         }
     };
 
+    class sentinel
+    {
+    private:
+        ws::detail::link* end_{nullptr};
+
+    public:
+        constexpr sentinel() noexcept = default;
+
+        explicit constexpr sentinel(ws::detail::link* end) noexcept : end_{end}
+        {}
+
+        constexpr bool operator==(const sentinel& other) const noexcept
+        {
+            return end_ == other.end_;
+        }
+
+        constexpr bool operator!=(const sentinel& other) const noexcept
+        {
+            return end_ != other.end_;
+        }
+
+        constexpr bool operator==(const iterator& it) const noexcept
+        {
+            return end_ == it.current_;
+        }
+
+        constexpr bool operator!=(const iterator& it) const noexcept
+        {
+            return end_ != it.current_;
+        }
+
+        friend constexpr bool operator==(const iterator& it,
+                                         const sentinel& sent) noexcept
+        {
+            return it.current_ == sent.end_;
+        }
+
+        friend constexpr bool operator!=(const iterator& it,
+                                         const sentinel& sent) noexcept
+        {
+            return it.current_ != sent.end_;
+        }
+    };
+
 private:
     ws::detail::link link_;
 
@@ -100,10 +146,9 @@ public:
         return iterator{link_.next};
     }
 
-    constexpr iterator end() noexcept
+    constexpr sentinel end() const noexcept
     {
-        // TODO consider replacing this with sentinel type to make this lighter
-        return iterator{&link_};
+        return sentinel{&link_};
     }
 
     constexpr bool empty() const noexcept

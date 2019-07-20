@@ -7,18 +7,18 @@ TEST_CASE("signal")
 {
     int i = 0;
 
-    ws::detail::signal_base sig;
+    ws::detail::signal_base<void> sig;
 
-    ws::detail::slot_base s0{[](auto* self, void* data) {
+    ws::detail::slot_base<void> s0{[](auto* self, void* data) {
         (void) self;
         auto& i = *static_cast<int*>(data);
         ++i;
     }};
 
     REQUIRE(i == 0);
-    sig(&i);
+    sig.emit(&i);
     REQUIRE(i == 0);
     sig.connect(s0);
-    sig(&i);
+    sig.emit(&i);
     REQUIRE(i == 1);
 }

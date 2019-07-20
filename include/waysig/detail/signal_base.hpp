@@ -7,15 +7,19 @@ namespace ws
 {
 namespace detail
 {
+template<typename Ret = void>
 struct signal_base
 {
 public:
-    ws::detail::intrusive_list<ws::detail::slot_base> slot_list;
+    using return_type = Ret;
+
+public:
+    ws::detail::intrusive_list<ws::detail::slot_base<return_type>> slot_list;
 
 public:
     constexpr signal_base() noexcept = default;
 
-    constexpr void connect(ws::detail::slot_base& slot) noexcept
+    constexpr void connect(ws::detail::slot_base<return_type>& slot) noexcept
     {
         slot_list.push_front(slot);
     }
@@ -26,24 +30,24 @@ public:
         auto end = slot_list.end();
         for (auto it = slot_list.begin(); it != end; ++it)
         {
-            ws::detail::slot_base& slot = *it;
+            auto& slot = *it;
             slot(data);
         }
     }
 
-    constexpr void emit() noexcept
+    // Usually used together with back_inserter. This will push back all the
+    // results into the vector. Only participates in overload resolution when
+    // the slot return type is non void.
+    template<typename OutputIt>
+    constexpr std::enable_if_t<!std::is_same_v<void, return_type>>
+    emit_collect(OutputIt out, void* data) noexcept
     {
-        emit(nullptr);
-    }
-
-    constexpr void operator()(void* data) noexcept
-    {
-        emit(data);
-    }
-
-    constexpr void operator()() noexcept
-    {
-        emit(nullptr);
+        auto end = slot_list.end();
+        for (auto it = slot_list.begin(); it != end; ++it, ++out)
+        {
+            auto& slot = *it;
+            *out       = slot(data);
+        }
     }
 };
 } // namespace detail

@@ -2,9 +2,6 @@
 
 #include <type_traits>
 
-#include <wayland-server-core.h>
-#include <wayland-util.h>
-
 #include "waysig/ext/wl_compat.hpp"
 
 TEST_CASE("wayland")

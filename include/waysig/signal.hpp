@@ -29,9 +29,32 @@ public:
         }
     }
 
+    constexpr void emit() noexcept
+    {
+        emit(nullptr);
+    }
+
+    template<typename... Args>
+    constexpr void emit(Args&&... args) noexcept
+    {
+        auto fwd_tup = std::forward_as_tuple(std::forward<Args>(args)...);
+        emit(static_cast<void*>(&fwd_tup));
+    }
+
     constexpr void operator()(void* data) noexcept
     {
         emit(data);
+    }
+
+    constexpr void operator()() noexcept
+    {
+        emit(nullptr);
+    }
+
+    template<typename... Args>
+    constexpr void operator()(Args&&... args) noexcept
+    {
+        emit(std::forward<Args>(args)...);
     }
 };
 } // namespace ws

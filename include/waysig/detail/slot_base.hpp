@@ -33,6 +33,17 @@ public:
     {
         return func(this, data);
     }
+
+    constexpr bool connected() const noexcept
+    {
+        return link.linked();
+    }
+
+    constexpr void disconnect() noexcept
+    {
+        link.remove(); // automatically checks whether the link is linked before
+                       // removing
+    }
 };
 
 template<typename Ret>

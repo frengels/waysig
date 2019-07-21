@@ -127,5 +127,29 @@ TEST_CASE("signal")
             s1(i);
             REQUIRE(i == 2);
         }
+
+        SECTION("remove_self")
+        {
+            // s0 and s1 are connected
+            // in here we test whether removing a slot itself it safe, this is
+            // the reason why the iterator in intrusive_list stores a pointer
+            // for current and next.
+            // In the case that we self remove current->next will be invalid.
+            i = 0;
+
+            auto s2 = ws::slot<void(int&)>{
+                [](ws::slot<void(int&)>& self, auto) { self.disconnect(); }};
+
+            auto s3 = ws::slot<void(int&)>{[](auto&, int& i) {
+                REQUIRE(i == 2);
+                ++i;
+            }};
+
+            sig.connect(s2);
+            sig.connect(s3);
+
+            sig(i);
+            REQUIRE(i == 3);
+        }
     }
 }

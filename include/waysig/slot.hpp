@@ -72,5 +72,16 @@ public:
         auto& base = *static_cast<ws::detail::slot_base<result_type>*>(this);
         return base(pack_args.void_ptr());
     }
+
+    constexpr bool connected() const noexcept
+    {
+        return static_cast<ws::detail::slot_base<result_type>*>(this)
+            ->connected();
+    }
+
+    constexpr void disconnect() noexcept
+    {
+        static_cast<ws::detail::slot_base<result_type>*>(this)->disconnect();
+    }
 };
 } // namespace ws

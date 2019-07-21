@@ -50,7 +50,7 @@ public:
     constexpr unaligned_storage() noexcept = default;
 
     template<typename T, typename... Args>
-    T& emplace(Args&&... args) noexcept(
+    constexpr T& emplace(Args&&... args) noexcept(
         std::is_nothrow_constructible_v<T, Args...>)
     {
         static_assert(std::is_empty_v<T>,
@@ -62,19 +62,21 @@ public:
     }
 
     template<typename T>
-    T& get() noexcept
+    constexpr T& get() noexcept
     {
         static_assert(std::is_empty_v<T>,
                       "unaligned_storage<0> cannot hold a non empty object");
-        return *reinterpret_cast<T*>(this);
+        auto* v = static_cast<void*>(this);
+        return *static_cast<T*>(v);
     }
 
     template<typename T>
-    const T& get() const noexcept
+    constexpr const T& get() const noexcept
     {
         static_assert(std::is_empty_v<T>,
                       "unaligned_storage<0> cannot hold a non empty object");
-        return *reinterpret_cast<const T*>(this);
+        const auto* v = static_cast<const void*>(this);
+        return *static_cast<const T*>(v);
     }
 };
 } // namespace detail

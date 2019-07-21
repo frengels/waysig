@@ -43,9 +43,6 @@ public:
             "F's signature is required to be (ws::slot<result_type(Args...)*, "
             "Args...) -> result_type");
         static_assert(std::is_empty_v<F>, "F must be empty for this slot type");
-        static_assert(std::is_trivially_destructible_v<F>,
-                      "F must be trivially destructible (nothing fancy "
-                      "happens in destructor)");
         // to be trivially copyable the type must not contain virtual functions
         // or bases, and the type itself and all its bases have implicitly
         // defined or defaulted copy/move construct/assign.

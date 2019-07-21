@@ -36,12 +36,12 @@ public:
     }
 
     // Usually used together with back_inserter. This will push back all the
-    // results into the vector. Only participates in overload resolution when
-    // the slot return type is non void.
+    // results into the vector.
     template<typename OutputIt>
-    constexpr std::enable_if_t<!std::is_same_v<void, result_type>>
-    emit_collect(OutputIt out, void* data) noexcept
+    void emit_collect(OutputIt out, void* data) noexcept
     {
+        static_assert(!std::is_same_v<void, result_type>,
+                      "Cannot collect results when result_type is void");
         auto end = slot_list.end();
         for (auto it = slot_list.begin(); it != end; ++it, ++out)
         {

@@ -29,15 +29,15 @@ void connect(wl_signal& sig, ws::slot<Res(Args...)>& slot) noexcept
     static_assert(
         ws::detail::is_slot_layout_compatible_v,
         "Slot binary layouts are not compatible, interop is not allowed");
-    auto&      slot_base = ws::detail::access::base(slot);
-    wl_signal* slot_cast = reinterpret_cast<wl_signal*>(&slot_base);
+    auto&        slot_base = ws::detail::slot_access::base(slot);
+    wl_listener* slot_cast = reinterpret_cast<wl_listener*>(&slot_base);
     wl_signal_add(&sig, slot_cast);
 }
 
 template<typename Res, typename... Args>
 void connect(ws::signal<Res(Args...)>& sig, wl_listener& listener) noexcept
 {
-    static_assert(std::is_same_v<void, T>,
+    static_assert(std::is_same_v<void, Res>,
                   "Cannot connect wl_listener to signal expecting non void "
                   "return type, wl_listener always returns void");
     static_assert(

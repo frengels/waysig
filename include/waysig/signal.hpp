@@ -55,4 +55,11 @@ constexpr void emit(ws::signal<Res(Args...)>& sig, Args&&... args) noexcept
 {
     sig(std::forward<Args>(args)...);
 }
+
+template<typename Res, typename... Args>
+void connect(ws::signal<Res(Args...)>& sig,
+             ws::slot<Res(Args...)>&   slot) noexcept
+{
+    sig.connect(slot);
+}
 } // namespace ws

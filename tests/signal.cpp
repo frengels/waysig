@@ -113,7 +113,8 @@ TEST_CASE("signal")
         REQUIRE(i == 1);
 
         i = 0;
-        sig.connect(s1);
+        ws::connect(sig, s1);
+        // sig.connect(s1);
         sig(i);
         REQUIRE(i == 2);
     }

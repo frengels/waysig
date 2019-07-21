@@ -6,9 +6,12 @@ wayland_tests = [
     'wl/abi',
 ]
 
+test_deps = [ waysig_dep, catch2_dep ]
+
 if get_option('test_wayland')
     wayland_dep = dependency('wayland-server')
     tests += wayland_tests
+    test_deps += wayland_dep
 endif
 
 catch_lib = static_library(
@@ -22,7 +25,7 @@ foreach t : tests
         t.underscorify(),
         '@0@.cpp'.format(t),
         link_with: catch_lib,
-        dependencies: [ waysig_dep, catch2_dep ],
+        dependencies: test_deps,
     )
     test(t, test_exe)
 endforeach

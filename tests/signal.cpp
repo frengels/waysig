@@ -150,6 +150,15 @@ TEST_CASE("signal")
 
             sig(i);
             REQUIRE(i == 3);
+
+            SECTION("disconnect")
+            {
+                i = 0;
+                s0.disconnect();
+                s1.disconnect();
+                s2.disconnect(); // duplicate disconnect should be safe
+                s3.disconnect();
+            }
         }
     }
 }

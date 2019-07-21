@@ -20,7 +20,7 @@ public:
 
 public:
     template<typename F>
-    slot(F fn) noexcept(std::is_nothrow_move_constructible_v<F>)
+    constexpr slot(F fn) noexcept(std::is_nothrow_move_constructible_v<F>)
         : ws::detail::slot_base<result_type>{
               [](ws::detail::slot_base<result_type>* self, void* data) {
                   auto* this_ =
@@ -42,63 +42,25 @@ public:
                                   Args...>,
             "F's signature is required to be (ws::slot<result_type(Args...)*, "
             "Args...) -> result_type");
-        static_assert(std::is_empty_v<F>,
-                      "Functor must be empty for this slot type");
+        static_assert(std::is_empty_v<F>, "F must be empty for this slot type");
         static_assert(std::is_trivially_destructible_v<F>,
-                      "Functor must be trivially destructible (nothing fancy "
+                      "F must be trivially destructible (nothing fancy "
                       "happens in destructor)");
-        static_assert(
-            std::is_trivially_move_assignable_v<F>,
-            "Functor must be trivially move assignable (defaulted move op=)");
-        static_assert(std::is_trivially_move_constructible_v<F>,
-                      "Functor must be trivially move constructible (defaulted "
-                      "move constructor)");
+        // to be trivially copyable the type must not contain virtual functions
+        // or bases, and the type itself and all its bases have implicitly
+        // defined or defaulted copy/move construct/assign.
+        // This causes me confusion as a lambda is trivially copyable but move
+        // and copy assign are deleted, so maybe it shouldn't be
+        // trivially_copyable?
+        // Either way this is solved for stateless lambdas in c++20 where they
+        // are default constructible (would remove need for trivially_copyable
+        // trait). Additionally copy/move assign will be defaulted for these.
+        // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0624r0.pdf
+        static_assert(std::is_trivially_copyable_v<F>,
+                      "F must be trivially copyable");
 
+        // because of being an empty type I assume this is well defined.
         new (this) F(std::move(fn));
     }
 };
-
-/*
-template<typename Sig, std::size_t Buff = 0>
-class slot;
-
-// this is a basic slot, which can take the specified args. There is only room
-// for a single function pointer.
-template<typename Ret, typename... Args, std::size_t Buff>
-class slot<Ret(Args...), Buff> : protected ws::detail::slot_base<Ret>,
-                               private ws::detail::unaligned_storage<Buff>
-{
-  friend ws::sigslot_access;
-
-public:
-  using result_type = Ret;
-
-public:
-  template<typename F>
-  constexpr slot(F fn) noexcept(std::is_nothrow_move_constructible_v<F>)
-      : ws::detail::slot_base<result_type>{
-            [](ws::detail::slot_base<result_type>* self, void* data) {
-                auto* this_   = static_cast<slot<Ret(Args...), Buff>*>(self);
-                F&    functor = this_->template get<F>();
-
-                // unpacked args automatically handles conversion from void*
-                auto args = ws::detail::unpacked_args<Args...>{data};
-                return args.apply([&](Args... args) {
-                    return std::invoke(
-                        functor, this_, std::forward<Args>(args)...);
-                });
-            }}
-  {
-      static_assert(std::is_invocable_r_v<result_type,
-                                          F,
-                                          slot<result_type(Args...), Buff>*,
-                                          Args...>,
-                    "Cannot call F with the arguments "
-                    "(slot<result_type(Args...), Buff>*, Args...)");
-      static_assert(std::is_trivially_destructible_v<F>,
-                    "F is not trivially destructible");
-      this->template emplace<F>(std::move(fn));
-  }
-};
-*/
 } // namespace ws

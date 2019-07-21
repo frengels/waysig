@@ -28,6 +28,25 @@ public:
         return *static_cast<const ws::detail::signal_base<Res>*>(
             std::addressof(s));
     }
+
+    template<typename T, typename Res>
+    static constexpr T& derived(ws::detail::signal_base<Res>& sig_b) noexcept
+    {
+        static_assert(
+            std::is_base_of_v<ws::detail::signal_base<Res>, T>,
+            "Cannot cast because T is not derived from signal_base<Res>");
+        return *static_cast<T*>(&sig_b);
+    }
+
+    template<typename T, typename Res>
+    static constexpr const T&
+    derived(const ws::detail::signal_base<Res>& sig_b) noexcept
+    {
+        static_assert(
+            std::is_base_of_v<ws::detail::signal_base<Res>, T>,
+            "Cannot cast because T is not derived from signal_base<Res>");
+        return *static_cast<const T*>(&sig_b);
+    }
 };
 } // namespace detail
 } // namespace ws

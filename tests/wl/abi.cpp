@@ -46,6 +46,7 @@ TEST_CASE("wayland")
 
             ws::connect(sig, s1);
             ws::emit(sig, i);
+            REQUIRE(i == 1);
 
             {
                 i = 0;
@@ -56,10 +57,9 @@ TEST_CASE("wayland")
                 }};
 
                 ws::connect(sig, s0);
-
                 ws::emit(sig, i);
-
                 REQUIRE(i == 2);
+
                 i = 0;
             }
 
@@ -68,6 +68,42 @@ TEST_CASE("wayland")
         }
 
         SECTION("signal_wl_listener")
-        {}
+        {
+            int                    i = 0;
+            ws::signal<void(int&)> sig;
+
+            wl_listener s0;
+            s0.notify = [](auto*, void* data) {
+                int* i = static_cast<int*>(data);
+                REQUIRE(*i == 0);
+                ++(*i);
+            };
+
+            ws::connect(sig, s0);
+            ws::emit(sig, i);
+            REQUIRE(i == 1);
+
+            {
+                // simulate the scope from above
+                i = 0;
+
+                wl_listener s1;
+                s1.notify = [](auto*, void* data) {
+                    int* i = static_cast<int*>(data);
+                    REQUIRE(*i == 1);
+                    ++(*i);
+                };
+
+                ws::connect(sig, s1);
+                ws::emit(sig, i);
+                REQUIRE(i == 2);
+
+                i = 0;
+                wl_list_remove(&s1.link);
+            }
+
+            ws::emit(sig, i);
+            REQUIRE(i == 1);
+        }
     }
 }

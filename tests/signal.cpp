@@ -27,6 +27,10 @@ TEST_CASE("signal")
         REQUIRE(i == 1);
     }
 
+    // empty base optimization success
+    static_assert(sizeof(ws::detail::slot_base<void>) ==
+                  sizeof(ws::slot<void(int&)>));
+
     SECTION("derived")
     {
         int                    i = 0;

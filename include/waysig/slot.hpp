@@ -24,7 +24,7 @@ public:
         : ws::detail::slot_base<result_type>{
               [](ws::detail::slot_base<result_type>* self, void* data) {
                   auto* this_   = static_cast<slot<Ret(Args...), Buff>*>(self);
-                  F&    functor = this_->get<F>();
+                  F&    functor = this_->template get<F>();
 
                   // unpacked args automatically handles conversion from void*
                   auto args = ws::detail::unpacked_args<Args...>{data};
@@ -42,7 +42,7 @@ public:
                       "(slot<result_type(Args...), Buff>*, Args...)");
         static_assert(std::is_trivially_destructible_v<F>,
                       "F is not trivially destructible");
-        this->emplace<F>(std::move(fn));
+        this->template emplace<F>(std::move(fn));
     }
 };
 } // namespace ws

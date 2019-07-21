@@ -23,9 +23,11 @@ public:
     constexpr slot(F fn) noexcept(std::is_nothrow_move_constructible_v<F>)
         : ws::detail::slot_base<result_type>{
               [](ws::detail::slot_base<result_type>* self, void* data) {
-                  auto* this_ =
-                      static_cast<ws::slot<result_type(Args...)>*>(self);
-                  auto* v       = static_cast<void*>(this_);
+                  auto& this_ =
+                      *static_cast<ws::slot<result_type(Args...)>*>(self);
+                  // this prevents reinterpret_cast, don't know how sound it is.
+                  // can be replaced by default constructing in c++20
+                  auto* v       = static_cast<void*>(std::addressof(this_));
                   F&    functor = *static_cast<F*>(v);
 
                   auto args = ws::detail::unpacked_args<Args...>{data};
@@ -38,7 +40,7 @@ public:
         static_assert(
             std::is_invocable_r_v<result_type,
                                   F&,
-                                  ws::slot<result_type(Args...)>*,
+                                  ws::slot<result_type(Args...)>&,
                                   Args...>,
             "F's signature is required to be (ws::slot<result_type(Args...)*, "
             "Args...) -> result_type");

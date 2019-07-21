@@ -36,7 +36,7 @@ TEST_CASE("signal")
         int                    i = 0;
         ws::signal<void(int&)> sig;
 
-        ws::slot<void(int&)> s0{[](auto* self, int& i) {
+        ws::slot<void(int&)> s0{[](auto& self, int& i) {
             (void) self;
             ++i;
         }};

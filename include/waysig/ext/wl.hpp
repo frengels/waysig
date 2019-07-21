@@ -51,8 +51,10 @@ void connect(ws::signal<Res(Args...)>& sig, wl_listener& listener) noexcept
         reinterpret_cast<ws::detail::slot_base<Res>*>(&listener);
     // this next step is a big assumption and the responsibility lies with the
     // user
-    ws::slot<Res(Args...)>& slot =
-        *static_cast<ws::slot<Res(Args...)>*>(slot_b);
+    auto& slot =
+        ws::detail::slot_access::derived<ws::slot<Res(Args...)>>(*slot_b);
+    // ws::slot<Res(Args...)>& slot =
+    //*static_cast<ws::slot<Res(Args...)>*>(slot_b);
     sig.connect(slot);
 }
 

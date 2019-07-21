@@ -3,6 +3,7 @@
 #include "waysig/detail/slot_base.hpp"
 #include "waysig/detail/unaligned_storage.hpp"
 #include "waysig/detail/util.hpp"
+#include "waysig/sigslot_access.hpp"
 
 namespace ws
 {
@@ -15,6 +16,8 @@ template<typename Ret, typename... Args, std::size_t Buff>
 class slot<Ret(Args...), Buff> : protected ws::detail::slot_base<Ret>,
                                  private ws::detail::unaligned_storage<Buff>
 {
+    friend ws::sigslot_access;
+
 public:
     using result_type = Ret;
 

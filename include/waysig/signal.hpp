@@ -1,19 +1,24 @@
 #pragma once
 
 #include "waysig/detail/signal_base.hpp"
+#include "waysig/detail/slot_access.hpp"
 #include "waysig/detail/util.hpp"
-#include "waysig/sigslot_access.hpp"
 #include "waysig/slot.hpp"
 
 namespace ws
 {
+namespace detail
+{
+class signal_access;
+}
+
 template<typename Signature>
 class signal;
 
 template<typename Ret, typename... Args>
 class signal<Ret(Args...)> : private ws::detail::signal_base<Ret>
 {
-    friend ws::sigslot_access;
+    friend ws::detail::signal_access;
 
 public:
     using result_type = Ret;
@@ -33,7 +38,7 @@ public:
 
     void connect(ws::slot<result_type(Args...)>& s) noexcept
     {
-        auto& base_slot = ws::sigslot_access::read_slot_base<result_type>(s);
+        auto& base_slot = ws::detail::slot_access::base(s);
         auto& base_sig =
             *static_cast<ws::detail::signal_base<result_type>*>(this);
         base_sig.connect(base_slot);

@@ -1,19 +1,22 @@
 #pragma once
 
 #include "waysig/detail/slot_base.hpp"
-#include "waysig/detail/unaligned_storage.hpp"
 #include "waysig/detail/util.hpp"
-#include "waysig/sigslot_access.hpp"
 
 namespace ws
 {
+namespace detail
+{
+class slot_access;
+}
+
 template<typename Sig>
 class slot;
 
 template<typename Res, typename... Args>
 class slot<Res(Args...)> : protected ws::detail::slot_base<Res>
 {
-    friend ws::sigslot_access;
+    friend ws::detail::slot_access;
 
 public:
     using result_type = Res;

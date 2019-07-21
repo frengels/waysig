@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-#include "waysig/ext/wl_compat.hpp"
+#include "waysig/ext/wl.hpp"
 
 TEST_CASE("wayland")
 {
@@ -27,5 +27,47 @@ TEST_CASE("wayland")
         {
             static_assert(ws::detail::is_signal_layout_compatible_v);
         }
+    }
+
+    SECTION("functions")
+    {
+        SECTION("wl_signal_slot")
+        {
+            int       i = 0;
+            wl_signal sig;
+            wl_signal_init(&sig);
+
+            // inserted first so invoked first
+            ws::slot<void(int&)> s1{[](auto& self, int& i) {
+                (void) self;
+                REQUIRE(i == 0);
+                ++i;
+            }};
+
+            ws::connect(sig, s1);
+            ws::emit(sig, i);
+
+            {
+                i = 0;
+                ws::slot<void(int&)> s0{[](auto& self, int& i) {
+                    (void) self;
+                    REQUIRE(i == 1);
+                    ++i;
+                }};
+
+                ws::connect(sig, s0);
+
+                ws::emit(sig, i);
+
+                REQUIRE(i == 2);
+                i = 0;
+            }
+
+            ws::emit(sig, i);
+            REQUIRE(i == 1);
+        }
+
+        SECTION("signal_wl_listener")
+        {}
     }
 }

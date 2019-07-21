@@ -179,11 +179,21 @@ public:
     {
         ws::detail::link* l = ws::detail::link::from(ref);
 
-        // from here on identical to wayland (wl_list_insert)
         l->prev       = &link_;
         l->next       = link_.next;
         link_.next    = l;
         l->next->prev = l;
+    }
+
+    // this is the call with same semantics as wl_signal_add
+    constexpr void push_back(reference ref) noexcept
+    {
+        ws::detail::link* l = ws::detail::link::from(ref);
+
+        l->next       = &link_;
+        l->prev       = link_.prev;
+        link_.prev    = l;
+        l->prev->next = l;
     }
 
     constexpr void insert_list(intrusive_list& other) noexcept

@@ -21,7 +21,7 @@ public:
 
     constexpr void connect(ws::detail::slot_base<result_type>& slot) noexcept
     {
-        slot_list.push_front(slot);
+        slot_list.push_back(slot);
     }
 
     constexpr void emit(void* data) noexcept

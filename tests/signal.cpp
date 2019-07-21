@@ -48,4 +48,73 @@ TEST_CASE("signal")
         sig.emit(i);
         REQUIRE(i == 1);
     }
+
+    SECTION("scope")
+    {
+        int                    i = 0;
+        ws::signal<void(int&)> sig;
+
+        ws::slot<void(int&)> s0{[](auto& self, int& i) {
+            (void) self;
+            ++i;
+        }};
+        ws::slot<void(int&)> s1{[](auto& self, int& i) {
+            (void) self;
+            ++i;
+        }};
+
+        sig.connect(s0);
+
+        sig(i);
+        REQUIRE(i == 1);
+        i = 0;
+
+        sig.connect(s1);
+
+        sig(i);
+        REQUIRE(i == 2);
+        i = 0;
+
+        {
+            ws::slot<void(int&)> s2{[](auto& self, int& i) {
+                (void) self;
+                ++i;
+            }};
+
+            sig.connect(s2);
+
+            sig(i);
+            REQUIRE(i == 3);
+            i = 0;
+        }
+
+        sig(i);
+        REQUIRE(i == 2);
+        i = 0;
+    }
+
+    SECTION("emit_order")
+    {
+        int                    i = 0;
+        ws::signal<void(int&)> sig;
+
+        ws::slot<void(int&)> s0{[](auto&, int& i) {
+            REQUIRE(i == 0);
+            ++i;
+        }};
+
+        ws::slot<void(int&)> s1{[](auto&, int& i) {
+            REQUIRE(i == 1);
+            ++i;
+        }};
+
+        sig.connect(s0);
+        sig(i);
+        REQUIRE(i == 1);
+
+        i = 0;
+        sig.connect(s1);
+        sig(i);
+        REQUIRE(i == 2);
+    }
 }

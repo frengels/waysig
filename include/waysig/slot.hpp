@@ -64,5 +64,13 @@ public:
         // because of being an empty type I assume this is well defined.
         new (this) F(std::move(fn));
     }
+
+    constexpr result_type operator()(Args... args) noexcept
+    {
+        auto pack_args =
+            ws::detail::make_packaged_args(std::forward<Args>(args)...);
+        auto& base = *static_cast<ws::detail::slot_base<result_type>*>(this);
+        return base(pack_args.void_ptr());
+    }
 };
 } // namespace ws

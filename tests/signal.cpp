@@ -117,5 +117,15 @@ TEST_CASE("signal")
         // sig.connect(s1);
         sig(i);
         REQUIRE(i == 2);
+
+        SECTION("invoke_slot")
+        {
+            // s0 and s1 are connected
+            i = 0;
+            s0(i);
+            REQUIRE(i == 1);
+            s1(i);
+            REQUIRE(i == 2);
+        }
     }
 }

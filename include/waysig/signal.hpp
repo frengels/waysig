@@ -49,4 +49,10 @@ public:
         emit(std::forward<Args>(args)...);
     }
 };
+
+template<typename Res, typename... Args>
+constexpr void emit(ws::signal<Res(Args...)>& sig, Args&&... args) noexcept
+{
+    sig(std::forward<Args>(args)...);
+}
 } // namespace ws

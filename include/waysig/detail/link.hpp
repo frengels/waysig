@@ -33,13 +33,28 @@ public:
         remove();
     }
 
+    constexpr bool linked() const noexcept
+    {
+        // through normal usage there should never be a case where only one is
+        // null but not the other. Therefore only check one.
+        return prev != nullptr;
+    }
+
+    explicit constexpr operator bool() const noexcept
+    {
+        return linked();
+    }
+
     constexpr void remove() noexcept
     {
-        // identical to wayland implementation
-        prev->next = next;
-        next->prev = prev;
-        next       = nullptr;
-        prev       = nullptr;
+        if (linked())
+        {
+            // identical to wayland implementation
+            prev->next = next;
+            next->prev = prev;
+            next       = nullptr;
+            prev       = nullptr;
+        }
     }
 
     template<typename T>

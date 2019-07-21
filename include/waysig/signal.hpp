@@ -31,8 +31,7 @@ public:
         sig_base.emit(package.void_ptr());
     }
 
-    template<std::size_t Buff>
-    void connect(ws::slot<result_type(Args...), Buff>& s) noexcept
+    void connect(ws::slot<result_type(Args...)>& s) noexcept
     {
         auto& base_slot = ws::sigslot_access::read_slot_base<result_type>(s);
         auto& base_sig =

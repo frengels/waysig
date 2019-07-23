@@ -75,7 +75,7 @@ public:
 
     constexpr bool connected() const noexcept
     {
-        return static_cast<ws::detail::slot_base<result_type>*>(this)
+        return static_cast<const ws::detail::slot_base<result_type>*>(this)
             ->connected();
     }
 

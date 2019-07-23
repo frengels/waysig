@@ -23,7 +23,7 @@ public:
 
 public:
     template<typename F>
-    constexpr slot(F fn) noexcept(std::is_nothrow_move_constructible_v<F>)
+    constexpr slot(F&& fn) noexcept(std::is_nothrow_move_constructible_v<F>)
         : ws::detail::slot_base<result_type>{
               [](ws::detail::slot_base<result_type>* self, void* data) {
                   auto& this_ =
@@ -62,7 +62,7 @@ public:
                       "F must be trivially copyable");
 
         // because of being an empty type I assume this is well defined.
-        new (this) F(std::move(fn));
+        new (this) std::decay_t<F>(std::forward<F>(fn));
     }
 
     constexpr result_type operator()(Args... args) noexcept

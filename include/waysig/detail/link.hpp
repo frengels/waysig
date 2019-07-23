@@ -37,6 +37,9 @@ public:
         {
             prev->next = this;
             next->prev = this;
+
+            other.next = nullptr;
+            other.prev = nullptr;
         }
     }
 

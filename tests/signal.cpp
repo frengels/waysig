@@ -128,6 +128,18 @@ TEST_CASE("signal")
             REQUIRE(i == 2);
         }
 
+        SECTION("move")
+        {
+            // s0 and s1 are connected
+
+            ws::slot<void(int&)> s2 = std::move(s1);
+            i                       = 0;
+
+            REQUIRE(!s1.connected());
+            sig(i);
+            REQUIRE(i == 2);
+        }
+
         SECTION("remove_self")
         {
             // s0 and s1 are connected

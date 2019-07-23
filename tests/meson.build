@@ -1,5 +1,6 @@
 tests = [
     'signal',
+    'inplace_slot',
 ]
 
 wayland_tests = [

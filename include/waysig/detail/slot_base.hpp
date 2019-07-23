@@ -1,5 +1,7 @@
 #pragma once
 
+#include "waysig/detail/link.hpp"
+
 namespace ws
 {
 namespace detail

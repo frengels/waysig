@@ -28,6 +28,34 @@ public:
     constexpr link(link* prev, link* next) noexcept : prev{prev}, next{next}
     {}
 
+    constexpr link(const link&) = delete;
+    constexpr link& operator=(const link&) = delete;
+
+    constexpr link(link&& other) noexcept : link{other.prev, other.next}
+    {
+        if (linked())
+        {
+            prev->next = this;
+            next->prev = this;
+        }
+    }
+
+    constexpr link& operator=(link&& other) noexcept
+    {
+        remove();
+
+        // replace with std exchange once constexpr in c++20?
+        prev       = other.prev;
+        next       = other.next;
+        other.prev = nullptr;
+        other.next = nullptr;
+
+        prev->next = this;
+        next->prev = this;
+
+        return *this;
+    }
+
     ~link()
     {
         remove();

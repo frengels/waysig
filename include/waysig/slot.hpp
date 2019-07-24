@@ -3,6 +3,18 @@
 #include "waysig/detail/slot_base.hpp"
 #include "waysig/detail/util.hpp"
 
+/// calculates the offset of mem_name to subtract from the address of ref, which
+/// can then be casted to a reference of type.
+/// Yes I know this is technically undefined behavior, but I'm pretty sure
+/// there's no compiler which treats this code wrong.
+/// using offsetof is avoided to avoid warnings from -Winvalid-offsetof which
+/// usually don't mean much anyway.
+#define WS_CONTAINER_OF(ref, type, mem_name)                                   \
+    *reinterpret_cast<type*>(                                                  \
+        reinterpret_cast<std::byte*>(std::addressof(ref)) -                    \
+        reinterpret_cast<std::byte*>(                                          \
+            std::addressof(reinterpret_cast<type*>(0)->mem_name)))
+
 namespace ws
 {
 namespace detail

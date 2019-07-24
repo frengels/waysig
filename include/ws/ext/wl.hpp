@@ -15,7 +15,7 @@
 
 namespace ws
 {
-void connect(wl_signal& sig, wl_listener& listener) noexcept
+static void connect(wl_signal& sig, wl_listener& listener) noexcept
 {
     wl_signal_add(&sig, &listener);
 }

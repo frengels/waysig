@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "ws/detail/slot_base.hpp"
 #include "ws/detail/util.hpp"
 
@@ -26,7 +28,7 @@ template<typename Sig>
 class slot;
 
 template<typename Res, typename... Args>
-class slot<Res(Args...)> : protected ws::detail::slot_base<Res>
+class slot<Res(Args...)> : private ws::detail::slot_base<Res>
 {
     friend ws::detail::slot_access;
 
@@ -57,7 +59,7 @@ public:
                                   F&,
                                   ws::slot<result_type(Args...)>&,
                                   Args...>,
-            "F's signature is required to be (ws::slot<result_type(Args...)*, "
+            "F's signature is required to be (ws::slot<result_type(Args...)>&, "
             "Args...) -> result_type");
         static_assert(std::is_empty_v<F>, "F must be empty for this slot type");
         // to be trivially copyable the type must not contain virtual functions

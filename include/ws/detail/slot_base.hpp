@@ -1,6 +1,6 @@
 #pragma once
 
-#include "waysig/detail/link.hpp"
+#include "ws/detail/link.hpp"
 
 namespace ws
 {

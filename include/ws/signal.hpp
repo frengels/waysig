@@ -1,9 +1,9 @@
 #pragma once
 
-#include "waysig/detail/signal_base.hpp"
-#include "waysig/detail/slot_access.hpp"
-#include "waysig/detail/util.hpp"
-#include "waysig/slot.hpp"
+#include "ws/detail/signal_base.hpp"
+#include "ws/detail/slot_access.hpp"
+#include "ws/detail/util.hpp"
+#include "ws/slot.hpp"
 
 namespace ws
 {

@@ -8,10 +8,10 @@
 
 #include <wayland-server-core.h>
 
-#include "waysig/detail/util.hpp"
-#include "waysig/ext/wl_compat.hpp"
-#include "waysig/signal.hpp"
-#include "waysig/slot.hpp"
+#include "ws/detail/util.hpp"
+#include "ws/ext/wl_compat.hpp"
+#include "ws/signal.hpp"
+#include "ws/slot.hpp"
 
 namespace ws
 {

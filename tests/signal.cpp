@@ -1,9 +1,9 @@
 #include <catch2/catch.hpp>
 
-#include "waysig/detail/signal_base.hpp"
-#include "waysig/detail/slot_base.hpp"
-#include "waysig/signal.hpp"
-#include "waysig/slot.hpp"
+#include "ws/detail/signal_base.hpp"
+#include "ws/detail/slot_base.hpp"
+#include "ws/signal.hpp"
+#include "ws/slot.hpp"
 
 TEST_CASE("signal")
 {

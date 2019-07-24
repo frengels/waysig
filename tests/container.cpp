@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include "waysig/inplace_slot.hpp"
-#include "waysig/signal.hpp"
+#include "ws/inplace_slot.hpp"
+#include "ws/signal.hpp"
 
 // a more realistic scenario where the slot is part of a struct, see if we can
 // derive the container from the slot information.

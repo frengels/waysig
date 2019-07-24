@@ -1,6 +1,6 @@
 #pragma once
 
-#include "waysig/signal.hpp"
+#include "ws/signal.hpp"
 
 namespace ws
 {

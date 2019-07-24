@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include "waysig/inplace_slot.hpp"
-#include "waysig/signal.hpp"
+#include "ws/inplace_slot.hpp"
+#include "ws/signal.hpp"
 
 TEST_CASE("inplace_slot")
 {

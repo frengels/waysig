@@ -1,7 +1,7 @@
 #pragma once
 
-#include "waysig/slot.hpp"
-#include "waysig/storage/local.hpp"
+#include "ws/slot.hpp"
+#include "ws/storage/local.hpp"
 
 namespace ws
 {

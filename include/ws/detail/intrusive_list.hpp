@@ -4,7 +4,7 @@
 #include <memory>
 #include <type_traits>
 
-#include "link.hpp"
+#include "ws/detail/link.hpp"
 
 namespace ws
 {

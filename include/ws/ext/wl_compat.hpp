@@ -3,10 +3,10 @@
 #include <wayland-server-core.h>
 #include <wayland-util.h>
 
-#include "waysig/detail/intrusive_list.hpp"
-#include "waysig/detail/link.hpp"
-#include "waysig/detail/signal_base.hpp"
-#include "waysig/detail/slot_base.hpp"
+#include "ws/detail/intrusive_list.hpp"
+#include "ws/detail/link.hpp"
+#include "ws/detail/signal_base.hpp"
+#include "ws/detail/slot_base.hpp"
 
 namespace ws
 {

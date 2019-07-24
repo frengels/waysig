@@ -1,7 +1,7 @@
 #pragma once
 
-#include "waysig/detail/slot_base.hpp"
-#include "waysig/detail/util.hpp"
+#include "ws/detail/slot_base.hpp"
+#include "ws/detail/util.hpp"
 
 /// calculates the offset of mem_name to subtract from the address of ref, which
 /// can then be casted to a reference of type.

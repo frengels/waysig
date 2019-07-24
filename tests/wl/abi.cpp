@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-#include "waysig/ext/wl.hpp"
+#include "ws/ext/wl.hpp"
 
 TEST_CASE("wayland")
 {

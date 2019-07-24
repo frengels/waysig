@@ -1,7 +1,7 @@
 #pragma once
 
-#include "waysig/detail/intrusive_list.hpp"
-#include "waysig/detail/slot_base.hpp"
+#include "ws/detail/intrusive_list.hpp"
+#include "ws/detail/slot_base.hpp"
 
 namespace ws
 {

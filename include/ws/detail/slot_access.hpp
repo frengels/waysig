@@ -1,6 +1,6 @@
 #pragma once
 
-#include "waysig/slot.hpp"
+#include "ws/slot.hpp"
 
 namespace ws
 {

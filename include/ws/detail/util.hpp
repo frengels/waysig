@@ -29,6 +29,22 @@ public:
 };
 
 template<typename T>
+class packaged_args<T>
+{
+private:
+    T val_;
+
+public:
+    constexpr packaged_args(T val) noexcept : val_{std::move(val)}
+    {}
+
+    constexpr void* void_ptr() noexcept
+    {
+        return static_cast<void*>(std::addressof(val_));
+    }
+};
+
+template<typename T>
 class packaged_args<T*>
 {
 private:
@@ -105,6 +121,25 @@ public:
     constexpr unpacked_args(void* data) noexcept
         : tup_args_{static_cast<std::tuple<Args...>*>(data)}
     {}
+};
+
+template<typename T>
+class unpacked_args<T>
+{
+private:
+    T* arg_;
+
+public:
+    constexpr unpacked_args(void* data) noexcept : arg_{static_cast<T*>(data)}
+    {}
+
+    template<typename F>
+    constexpr decltype(auto)
+    apply(F&& f) noexcept(std::is_nothrow_invocable_v<F, T>)
+    {
+        static_assert(std::is_invocable_v<F, T>, "Cannot call F with T");
+        return std::invoke(std::forward<F>(f), std::move(*arg_));
+    }
 };
 
 template<typename T>

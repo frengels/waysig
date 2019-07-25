@@ -15,7 +15,7 @@
 
 namespace ws
 {
-static void connect(wl_signal& sig, wl_listener& listener) noexcept
+static inline void connect(wl_signal& sig, wl_listener& listener) noexcept
 {
     wl_signal_add(&sig, &listener);
 }
@@ -23,6 +23,19 @@ static void connect(wl_signal& sig, wl_listener& listener) noexcept
 template<typename Res, typename... Args>
 void connect(wl_signal& sig, ws::slot<Res(Args...)>& slot) noexcept
 {
+    static_assert(sizeof...(Args) <= 1,
+                  "wl_signal will never send more than one argument.");
+    if constexpr (sizeof...(Args) == 1)
+    {
+        using arg_type = std::tuple_element_t<0, std::tuple<Args...>>;
+
+        static_assert(!std::is_const_v<arg_type>,
+                      "wl_signal will never send a const qualified value");
+        static_assert(std::is_lvalue_reference_v<arg_type> ||
+                          std::is_pointer_v<arg_type>,
+                      "We can only convert wl_signal argument to pointer or "
+                      "lvalue reference");
+    }
     static_assert(std::is_same_v<void, Res>,
                   "Cannot connect slot<Res(Args...)> with non void return type "
                   "to wl_signal");
@@ -37,6 +50,22 @@ void connect(wl_signal& sig, ws::slot<Res(Args...)>& slot) noexcept
 template<typename Res, typename... Args>
 void connect(ws::signal<Res(Args...)>& sig, wl_listener& listener) noexcept
 {
+    static_assert(sizeof...(Args) <= 1,
+                  "wl_listener cannot take more than 1 argument.");
+
+    if constexpr (sizeof...(Args) == 1)
+    {
+        using arg_type = std::tuple_element_t<0, std::tuple<Args...>>;
+
+        static_assert(!std::is_const_v<arg_type>,
+                      "wl_listener can't handle const arguments");
+
+        static_assert(std::is_lvalue_reference_v<arg_type> ||
+                          std::is_pointer_v<arg_type>,
+                      "We can only convert to wl_listener's argument from "
+                      "pointer or lvalue reference types.");
+    }
+
     static_assert(std::is_same_v<void, Res>,
                   "Cannot connect wl_listener to signal expecting non void "
                   "return type, wl_listener always returns void");

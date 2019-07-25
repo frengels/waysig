@@ -138,7 +138,8 @@ public:
     apply(F&& f) noexcept(std::is_nothrow_invocable_v<F, T>)
     {
         static_assert(std::is_invocable_v<F, T>, "Cannot call F with T");
-        return std::invoke(std::forward<F>(f), std::move(*arg_));
+        // don't move from, or we destroy the state for any calls afterwards
+        return std::invoke(std::forward<F>(f), *arg_);
     }
 };
 

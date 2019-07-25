@@ -5,6 +5,49 @@
 #include "ws/signal.hpp"
 #include "ws/slot.hpp"
 
+struct move_copy_counter
+{
+    int copy_construct{0};
+    int copy_assign{0};
+    int move_construct{0};
+    int move_assign{0};
+
+    constexpr move_copy_counter() noexcept = default;
+
+    constexpr move_copy_counter(const move_copy_counter& other) noexcept
+        : copy_construct{other.copy_construct + 1},
+          copy_assign{other.copy_assign}, move_construct{other.move_construct},
+          move_assign{other.move_assign}
+    {}
+
+    constexpr move_copy_counter&
+    operator=(const move_copy_counter& other) noexcept
+    {
+        copy_construct = other.copy_construct;
+        copy_assign    = other.copy_assign + 1;
+        move_construct = other.move_construct;
+        move_assign    = other.move_assign;
+
+        return *this;
+    }
+
+    constexpr move_copy_counter(move_copy_counter&& other) noexcept
+        : copy_construct{other.copy_construct}, copy_assign{other.copy_assign},
+          move_construct{other.move_construct + 1}, move_assign{
+                                                        other.move_assign}
+    {}
+
+    constexpr move_copy_counter& operator=(move_copy_counter&& other) noexcept
+    {
+        copy_construct = other.copy_construct;
+        copy_assign    = other.copy_assign;
+        move_construct = other.move_construct;
+        move_assign    = other.move_assign + 1;
+
+        return *this;
+    }
+};
+
 TEST_CASE("signal")
 {
     SECTION("base")
@@ -190,5 +233,60 @@ TEST_CASE("signal")
 
         REQUIRE(res[0] == 10);
         REQUIRE(res[1] == 15);
+    }
+
+    SECTION("value")
+    {
+        auto str = std::string{"Hello"};
+
+        ws::signal<std::string(std::string)> sig;
+
+        ws::slot<std::string(std::string)> move_out0{
+            [](auto&, std::string str) { return str; }};
+        ws::slot<std::string(std::string)> move_out1{
+            [](auto&, std::string str) { return str; }};
+
+        sig.connect(move_out0);
+        sig.connect(move_out1);
+
+        std::vector<std::string> res;
+
+        sig(std::back_inserter(res), str);
+
+        REQUIRE(str.compare("Hello") == 0);
+        REQUIRE(res[0].compare("Hello") == 0);
+        REQUIRE(res[1].compare("Hello") == 0);
+    }
+
+    SECTION("count_moves")
+    {
+        auto mcc = move_copy_counter{};
+
+        ws::signal<move_copy_counter(move_copy_counter)> sig;
+
+        ws::slot<move_copy_counter(move_copy_counter)> move_out0{
+            [](auto&, move_copy_counter mcc) { return mcc; }};
+        ws::slot<move_copy_counter(move_copy_counter)> move_out1{
+            [](auto&, move_copy_counter mcc) { return mcc; }};
+
+        sig.connect(move_out0);
+        sig.connect(move_out1);
+
+        std::vector<move_copy_counter> res;
+        res.reserve(100); // reserve enough space to prevent further moves
+
+        // process should be:
+        // - copy into signal method
+        // - move into packed_args
+        // - copy into slot
+        // - move into vector
+        // - 2 move, 2 copy
+        sig(std::back_inserter(res), mcc);
+
+        REQUIRE(res[0].copy_construct == res[1].copy_construct);
+        REQUIRE(res[0].move_construct == res[1].move_construct);
+
+        REQUIRE(res[0].copy_construct == 2);
+        REQUIRE(res[0].move_construct == 2);
     }
 }

@@ -173,4 +173,22 @@ TEST_CASE("signal")
             }
         }
     }
+
+    SECTION("output_iterator")
+    {
+        ws::signal<int(int)> sig;
+
+        ws::slot<int(int)> doubler{[](auto&, int i) { return i * 2; }};
+        ws::slot<int(int)> tripler{[](auto&, int i) { return i * 3; }};
+
+        sig.connect(doubler);
+        sig.connect(tripler);
+
+        std::vector<int> res;
+
+        sig(std::back_inserter(res), 5);
+
+        REQUIRE(res[0] == 10);
+        REQUIRE(res[1] == 15);
+    }
 }

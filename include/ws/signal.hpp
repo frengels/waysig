@@ -36,6 +36,18 @@ public:
         sig_base.emit(package.void_ptr());
     }
 
+    template<typename OutputIt>
+    constexpr void emit(OutputIt it, Args... args) noexcept
+    {
+        auto package =
+            ws::detail::make_packaged_args(std::forward<Args>(args)...);
+
+        auto& sig_base =
+            *static_cast<ws::detail::signal_base<result_type>*>(this);
+
+        sig_base.emit(std::move(it), package.void_ptr());
+    }
+
     void connect(ws::slot<result_type(Args...)>& s) noexcept
     {
         auto& base_slot = ws::detail::slot_access::base(s);
@@ -47,6 +59,12 @@ public:
     constexpr void operator()(Args... args) noexcept
     {
         emit(std::forward<Args>(args)...);
+    }
+
+    template<typename OutputIt>
+    constexpr void operator()(OutputIt it, Args... args) noexcept
+    {
+        emit(std::move(it), std::forward<Args>(args)...);
     }
 };
 

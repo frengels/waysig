@@ -38,7 +38,7 @@ public:
     // Usually used together with back_inserter. This will push back all the
     // results into the vector.
     template<typename OutputIt>
-    void emit_collect(OutputIt out, void* data) noexcept
+    void emit(OutputIt out, void* data) noexcept
     {
         static_assert(!std::is_same_v<void, result_type>,
                       "Cannot collect results when result_type is void");

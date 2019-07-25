@@ -7,10 +7,11 @@
 
 struct move_copy_counter
 {
-    int copy_construct{0};
-    int copy_assign{0};
-    int move_construct{0};
-    int move_assign{0};
+    bool moved_from{false};
+    int  copy_construct{0};
+    int  copy_assign{0};
+    int  move_construct{0};
+    int  move_assign{0};
 
     constexpr move_copy_counter() noexcept = default;
 
@@ -35,7 +36,9 @@ struct move_copy_counter
         : copy_construct{other.copy_construct}, copy_assign{other.copy_assign},
           move_construct{other.move_construct + 1}, move_assign{
                                                         other.move_assign}
-    {}
+    {
+        other.moved_from = true;
+    }
 
     constexpr move_copy_counter& operator=(move_copy_counter&& other) noexcept
     {
@@ -43,6 +46,8 @@ struct move_copy_counter
         copy_assign    = other.copy_assign;
         move_construct = other.move_construct;
         move_assign    = other.move_assign + 1;
+
+        other.moved_from = true;
 
         return *this;
     }
@@ -283,10 +288,52 @@ TEST_CASE("signal")
         // - 2 move, 2 copy
         sig(std::back_inserter(res), mcc);
 
+        REQUIRE(!mcc.moved_from);
+
+        REQUIRE(!res[0].moved_from);
+        REQUIRE(!res[1].moved_from);
+
         REQUIRE(res[0].copy_construct == res[1].copy_construct);
         REQUIRE(res[0].move_construct == res[1].move_construct);
 
+        // this clearly shows, never pass by value unless very cheap
         REQUIRE(res[0].copy_construct == 2);
+        REQUIRE(res[0].move_construct == 6); // not sure why 6?
+    }
+
+    SECTION("const_ref")
+    {
+        // same thing as above but with const ref, we expect less copies and
+        // moves.
+        auto mcc = move_copy_counter{};
+
+        ws::signal<move_copy_counter(const move_copy_counter&)> sig;
+
+        ws::slot<move_copy_counter(const move_copy_counter&)> move_out0{
+            [](auto&, move_copy_counter mcc) { return mcc; }};
+        ws::slot<move_copy_counter(const move_copy_counter&)> move_out1{
+            [](auto&, move_copy_counter mcc) { return mcc; }};
+
+        sig.connect(move_out0);
+        sig.connect(move_out1);
+
+        std::vector<move_copy_counter> res;
+        res.reserve(100); // reserve enough space to prevent further moves
+
+        // pass reference to slots
+        // slot makes copy on return.
+        // gets moved into vector
+        sig(std::back_inserter(res), mcc);
+
+        REQUIRE(!mcc.moved_from);
+
+        REQUIRE(!res[0].moved_from);
+        REQUIRE(!res[1].moved_from);
+
+        REQUIRE(res[0].copy_construct == res[1].copy_construct);
+        REQUIRE(res[0].move_construct == res[1].move_construct);
+
+        REQUIRE(res[0].copy_construct == 1);
         REQUIRE(res[0].move_construct == 2);
     }
 }

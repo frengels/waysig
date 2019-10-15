@@ -2,5 +2,5 @@
 with pkgs;
 gcc9Stdenv.mkDerivation {
     name = "waysig-env";
-    buildInputs = [ meson ninja pkgconfig catch2 wayland clang gdb ];
+    buildInputs = [ cmake pkgconfig catch2 wayland extra-cmake-modules clang gdb ];
 }

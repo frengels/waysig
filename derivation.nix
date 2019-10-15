@@ -1,4 +1,4 @@
-{ stdenv, pkgconfig, meson, ninja }:
+{ stdenv, cmake }:
 
 stdenv.mkDerivation rec {
     name = "waysig-${version}";
@@ -6,7 +6,7 @@ stdenv.mkDerivation rec {
 
     src = ./.;
 
-    nativeBuildInputs = [ meson ninja pkgconfig ];
+    nativeBuildInputs = [ cmake ];
 
     meta = with stdenv.lib; {
         homepage = "https://github.com/dreyri/waysig";

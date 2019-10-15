@@ -1,9 +1,0 @@
-option('tests',
-    type: 'boolean',
-    value: false,
-    description: 'Build unit tests')
-
-option('test_wayland',
-    type: 'boolean',
-    value: false,
-    description: 'Test wl_listener ABI compatibility')

@@ -34,3 +34,6 @@
 build/
 result/
 result
+pkg/
+src/
+waysig/

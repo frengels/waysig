@@ -26,7 +26,7 @@ if(WAYSIG_BUILD_TESTS_WAYLAND)
     find_package(ECM REQUIRED NO_MODULE)
     set(CMAKE_MODULE_PATH "${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH}")
 
-    find_package(Wayland REQUIRED)
+    find_package(Wayland REQUIRED Server)
 
     foreach(t ${WAYLAND_TESTS})
         make_test(${t})

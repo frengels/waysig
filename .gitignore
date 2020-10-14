@@ -38,3 +38,6 @@ pkg/
 src/
 waysig/
 .vscode/
+compile_flags.txt
+.direnv/
+.ccls

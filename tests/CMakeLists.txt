@@ -1,7 +1,5 @@
 set(TESTS
-    signal
-    inplace_slot
-    container)
+    signal)
 
 set(WAYLAND_TESTS
     wl_abi)

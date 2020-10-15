@@ -16,7 +16,7 @@
     in {
       overlay = final: prev: rec {
         waysig = with final;
-          stdenv.mkDerivation rec {
+          gcc10Stdenv.mkDerivation rec {
             name = "waysig-${version}";
             version = "0.1.0";
 
@@ -41,8 +41,9 @@
       devShell = forAllSystems (system:
         let pkgs = import nixpkgs { inherit system; };
         in with pkgs;
-        mkShell {
-          buildInputs = [ pkgconfig ccls cmake wayland extra-cmake-modules catch2 ];
+        (mkShell.override { stdenv = gcc10Stdenv; }) {
+          buildInputs =
+            [ pkgconfig ccls cmake wayland extra-cmake-modules catch2 ];
 
           shellHook = ''
             echo "%compile_commands.json" > .ccls

@@ -10,11 +10,18 @@ if (WAYSIG_BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
+find_package(ECM REQUIRED NO_MODULE)
+
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH})
+
+find_package(Wayland REQUIRED Server)
+
 include(CMakePackageConfigHelpers)
 
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+target_link_libraries(${PROJECT_NAME} INTERFACE Wayland::Server)
 
 target_include_directories(
   ${PROJECT_NAME}

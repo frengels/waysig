@@ -41,3 +41,4 @@ waysig/
 compile_flags.txt
 .direnv/
 .ccls
+.ccls-cache/

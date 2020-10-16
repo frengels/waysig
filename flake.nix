@@ -46,10 +46,12 @@
             [ pkgconfig ccls cmake wayland extra-cmake-modules catch2 ];
 
           shellHook = ''
-            echo "%compile_commands.json" > .ccls
-            echo "%cpp -std=c++17" >> .ccls
-            echo "-Iinclude" >> .ccls
-            echo "-I${pkgs.wayland}/include >> .ccls
+            cat << EOF > .ccls
+            %compile_commands.json
+            %cpp -std=c++17
+            -Iinclude
+            -I${pkgs.wayland}/include 
+            EOF
           '';
         });
     };

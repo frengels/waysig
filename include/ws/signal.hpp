@@ -1,25 +1,15 @@
 #pragma once
 
-#include <wayland-server-core.h>
-
-#include "ws/detail/signal_base.hpp"
-#include "ws/detail/slot_access.hpp"
-#include "ws/detail/util.hpp"
-#include "ws/slot.hpp"
+#include "ws/detail/config.hpp"
 
 #include "ws/listener.hpp"
 
 namespace ws
 {
-namespace detail
-{
-class signal_access;
-}
-
-class signal_base : public wl_signal
+class signal_base : public ws::detail::signal
 {
 public:
-    signal_base() : wl_signal{}
+    constexpr signal_base() : ws::detail::signal{}
     {
         this->listener_list.prev = &this->listener_list;
         this->listener_list.next = &this->listener_list;
@@ -28,19 +18,20 @@ public:
     signal_base(const signal_base&) = delete;
     signal_base& operator=(const signal_base&) = delete;
 
-    signal_base(signal_base&& other) noexcept
-        : wl_signal{.listener_list = other.listener_list}
+    constexpr signal_base(signal_base&& other) noexcept
+        : ws::detail::signal{.listener_list = other.listener_list}
     {
         other.listener_list.prev->next = &this->listener_list;
         other.listener_list.next->prev = &this->listener_list;
     }
 
-    signal_base& operator=(signal_base&& other) noexcept
+    constexpr signal_base& operator=(signal_base&& other) noexcept
     {
-        this->listener_list.prev =
-            std::exchange(other.listener_list.prev, nullptr);
-        this->listener_list.next =
-            std::exchange(other.listener_list.next, nullptr);
+        this->listener_list.prev = other.listener_list.prev;
+        other.listener_list.prev = nullptr;
+
+        this->listener_list.next = other.listener_list.next;
+        other.listener_list.next = nullptr;
 
         this->listener_list.prev->next = &this->listener_list;
         this->listener_list.next->prev = &this->listener_list;
@@ -48,10 +39,26 @@ public:
         return *this;
     }
 
-    void add_raw(wl_listener& l)
+#ifdef WAYSIG_ENABLE_WL
+    constexpr void add_wl(wl_listener& l)
     {
-        wl_signal_add(this, &l);
+        add_raw(l);
     }
+#endif
+
+protected:
+    constexpr void add_raw(ws::detail::listener& l)
+    {
+        auto* last = this->listener_list.prev;
+
+        l.link.prev      = last;
+        l.link.next      = last->next;
+        last->next       = &l.link;
+        last->next->prev = &l.link;
+    }
+
+    constexpr void emit_raw(void* p) noexcept
+    {}
 };
 
 template<typename T>
@@ -111,73 +118,4 @@ public:
         add_raw(l);
     }
 };
-
-template<typename Signature>
-class signal;
-
-template<typename Ret, typename... Args>
-class signal<Ret(Args...)> : private ws::detail::signal_base<Ret>
-{
-    friend ws::detail::signal_access;
-
-public:
-    using result_type = Ret;
-
-public:
-    constexpr void emit(Args... args) noexcept
-    {
-        // this creates an instance of packaged_args.
-        // packaged_args automatically handles required conversions
-        auto package =
-            ws::detail::make_packaged_args(std::forward<Args>(args)...);
-
-        auto& sig_base =
-            *static_cast<ws::detail::signal_base<result_type>*>(this);
-        sig_base.emit(package.void_ptr());
-    }
-
-    template<typename OutputIt>
-    constexpr void emit(OutputIt it, Args... args) noexcept
-    {
-        auto package =
-            ws::detail::make_packaged_args(std::forward<Args>(args)...);
-
-        auto& sig_base =
-            *static_cast<ws::detail::signal_base<result_type>*>(this);
-
-        sig_base.emit(std::move(it), package.void_ptr());
-    }
-
-    void connect(ws::slot<result_type(Args...)>& s) noexcept
-    {
-        auto& base_slot = ws::detail::slot_access::base(s);
-        auto& base_sig =
-            *static_cast<ws::detail::signal_base<result_type>*>(this);
-        base_sig.connect(base_slot);
-    }
-
-    constexpr void operator()(Args... args) noexcept
-    {
-        emit(std::forward<Args>(args)...);
-    }
-
-    template<typename OutputIt>
-    constexpr void operator()(OutputIt it, Args... args) noexcept
-    {
-        emit(std::move(it), std::forward<Args>(args)...);
-    }
-};
-
-template<typename Res, typename... Args>
-constexpr void emit(ws::signal<Res(Args...)>& sig, Args&&... args) noexcept
-{
-    sig(std::forward<Args>(args)...);
-}
-
-template<typename Res, typename... Args>
-void connect(ws::signal<Res(Args...)>& sig,
-             ws::slot<Res(Args...)>&   slot) noexcept
-{
-    sig.connect(slot);
-}
 } // namespace ws

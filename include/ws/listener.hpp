@@ -3,17 +3,17 @@
 #include <type_traits>
 #include <utility>
 
-#include <wayland-server-core.h>
+#include "ws/detail/config.hpp"
 
 namespace ws
 {
-class listener_base : public wl_listener
+class listener_base : public ws::detail::listener
 {
 public:
     listener_base() = default;
 
     listener_base(listener_base&& other) noexcept
-        : wl_listener{std::move(other)}
+        : ws::detail::listener{std::move(other)}
     {
         this->link.prev->next = &this->link;
         this->link.next->prev = &this->link;

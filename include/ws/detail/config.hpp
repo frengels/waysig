@@ -1,7 +1,5 @@
 #pragma once
 
-#define WAYSIG_ENABLE_WL
-
 #ifdef WAYSIG_ENABLE_WL
 #include <wayland-server-core.h>
 #endif

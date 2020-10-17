@@ -1,8 +1,16 @@
 #pragma once
 
+#ifndef NDEBUG
+#include <cassert>
+#endif
+
 #include "ws/detail/config.hpp"
 
 #include "ws/listener.hpp"
+
+#define WS_CONTAINER_OF(ref, ty, member)                                       \
+    *reinterpret_cast<ty*>(reinterpret_cast<std::byte*>(std::addressof(ref)) - \
+                           offsetof(ty, member))
 
 namespace ws
 {
@@ -14,6 +22,15 @@ public:
         this->listener_list.prev = &this->listener_list;
         this->listener_list.next = &this->listener_list;
     }
+
+#ifndef NDEBUG
+    ~signal_base()
+    {
+        // make sure that all connected listeners have disconnected
+        assert(this->listener_list.prev == &this->listener_list);
+        assert(this->listener_list.next == &this->listener_list);
+    }
+#endif
 
     signal_base(const signal_base&) = delete;
     signal_base& operator=(const signal_base&) = delete;
@@ -51,22 +68,35 @@ protected:
     {
         auto* last = this->listener_list.prev;
 
-        l.link.prev      = last;
-        l.link.next      = last->next;
-        last->next       = &l.link;
-        last->next->prev = &l.link;
+        l.link.prev       = last;
+        l.link.next       = last->next;
+        last->next        = &l.link;
+        l.link.next->prev = &l.link;
     }
 
-    constexpr void emit_raw(void* p) noexcept
-    {}
+    void emit_raw(void* p) noexcept
+    {
+        ws::detail::list* current = this->listener_list.next;
+        ws::detail::list* next    = current->next;
+
+        ws::detail::list* end = &this->listener_list;
+
+        while (current != end)
+        {
+            auto& listen =
+                WS_CONTAINER_OF(*current, ws::detail::listener, link);
+            listen.notify(&listen, p);
+            current = next;
+            next    = current->next;
+        }
+    }
 };
 
 template<typename T>
 class signal : public signal_base
 {
     static_assert(
-        std::is_void_v<T> || std::is_reference_v<T> ||
-            sizeof(T) <= sizeof(void*),
+        std::is_reference_v<T> || sizeof(T) <= sizeof(void*),
         "Argument type must be a reference or less than the size of a pointer");
 
 public:
@@ -79,11 +109,15 @@ public:
                       "void means no argument is passed, use emit() instead");
         if constexpr (std::is_reference_v<T>)
         {
-            wl_signal_emit(this, static_cast<void*>(std::addressof(arg)));
+            emit_raw(static_cast<void*>(std::addressof(arg)));
+        }
+        else if constexpr (std::is_pointer_v<T>)
+        {
+            emit_raw(static_cast<void*>(arg));
         }
         else
         {
-            wl_signal_emit(this, reinterpret_cast<void*>(arg));
+            emit_raw(reinterpret_cast<void*>(arg));
         }
     }
 
@@ -105,7 +139,7 @@ class signal<void> : public signal_base
 public:
     void emit() noexcept
     {
-        wl_signal_emit(this, nullptr);
+        emit_raw(nullptr);
     }
 
     void operator()() noexcept

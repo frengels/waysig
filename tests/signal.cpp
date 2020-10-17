@@ -1,10 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include "ws/detail/signal_base.hpp"
-#include "ws/detail/slot_base.hpp"
 #include "ws/listener.hpp"
 #include "ws/signal.hpp"
-#include "ws/slot.hpp"
 
 struct move_copy_counter
 {

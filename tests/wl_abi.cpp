@@ -2,108 +2,39 @@
 
 #include <type_traits>
 
-#include "ws/ext/wl.hpp"
+#undef WAYSIG_ENABLE_WL
+#include <ws/listener.hpp>
+#include <ws/signal.hpp>
+
+#include <wayland-server-core.h>
 
 TEST_CASE("wayland")
 {
     SECTION("abi")
     {
-        SECTION("link")
-        {
-            static_assert(ws::detail::is_link_layout_compatible_v);
-        }
-
         SECTION("list")
         {
-            static_assert(ws::detail::is_list_layout_compatible_v);
+            static_assert(sizeof(ws::detail::list) == sizeof(wl_list));
+            static_assert(offsetof(ws::detail::list, prev) ==
+                          offsetof(wl_list, prev));
+            static_assert(offsetof(ws::detail::list, next) ==
+                          offsetof(wl_list, next));
         }
 
         SECTION("listener")
         {
-            static_assert(ws::detail::is_slot_layout_compatible_v);
+            static_assert(sizeof(ws::detail::listener) == sizeof(wl_listener));
+            static_assert(offsetof(ws::detail::listener, link) ==
+                          offsetof(wl_listener, link));
+            static_assert(offsetof(ws::detail::listener, notify) ==
+                          offsetof(wl_listener, notify));
         }
 
         SECTION("signal")
         {
-            static_assert(ws::detail::is_signal_layout_compatible_v);
-        }
-    }
-
-    SECTION("functions")
-    {
-        SECTION("wl_signal_slot")
-        {
-            int       i = 0;
-            wl_signal sig;
-            wl_signal_init(&sig);
-
-            // inserted first so invoked first
-            ws::slot<void(int&)> s1{[](auto& self, int& i) {
-                (void) self;
-                REQUIRE(i == 0);
-                ++i;
-            }};
-
-            ws::connect(sig, s1);
-            ws::emit(sig, i);
-            REQUIRE(i == 1);
-
-            {
-                i = 0;
-                ws::slot<void(int&)> s0{[](auto& self, int& i) {
-                    (void) self;
-                    REQUIRE(i == 1);
-                    ++i;
-                }};
-
-                ws::connect(sig, s0);
-                ws::emit(sig, i);
-                REQUIRE(i == 2);
-
-                i = 0;
-            }
-
-            ws::emit(sig, i);
-            REQUIRE(i == 1);
-        }
-
-        SECTION("signal_wl_listener")
-        {
-            int                    i = 0;
-            ws::signal<void(int&)> sig;
-
-            wl_listener s0;
-            s0.notify = [](auto*, void* data) {
-                int* i = static_cast<int*>(data);
-                REQUIRE(*i == 0);
-                ++(*i);
-            };
-
-            ws::connect(sig, s0);
-            ws::emit(sig, i);
-            REQUIRE(i == 1);
-
-            {
-                // simulate the scope from above
-                i = 0;
-
-                wl_listener s1;
-                s1.notify = [](auto*, void* data) {
-                    int* i = static_cast<int*>(data);
-                    REQUIRE(*i == 1);
-                    ++(*i);
-                };
-
-                ws::connect(sig, s1);
-                ws::emit(sig, i);
-                REQUIRE(i == 2);
-
-                i = 0;
-                wl_list_remove(&s1.link);
-            }
-
-            ws::emit(sig, i);
-            REQUIRE(i == 1);
+            static_assert(sizeof(ws::detail::signal) == sizeof(wl_signal));
+            static_assert(offsetof(ws::detail::signal, listener_list) ==
+                          offsetof(wl_signal, listener_list));
         }
     }
 }

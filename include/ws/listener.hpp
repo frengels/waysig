@@ -48,10 +48,14 @@ public:
 
     void remove() noexcept
     {
-        wl_list_remove(&this->link);
+        this->link.prev->next = this->link.next;
+        this->link.next->prev = this->link.prev;
+
+        this->link.next = nullptr;
+        this->link.prev = nullptr;
     }
 
-    constexpr void set_notify_raw(wl_notify_func_t notify) noexcept
+    constexpr void set_notify_raw(ws::detail::notify_func_t notify) noexcept
     {
         this->notify = notify;
     }
@@ -115,7 +119,7 @@ public:
         static_assert(std::is_invocable_r_v<void, F, listener<T>&, T>,
                       "F must be invocable with a listener and data");
 
-        set_notify_raw([](wl_listener* l, void* data_ptr) {
+        set_notify_raw([](ws::detail::listener* l, void* data_ptr) {
             T data = [&]() -> T {
                 if constexpr (std::is_reference_v<T>)
                 {
@@ -175,7 +179,7 @@ public:
         static_assert(std::is_invocable_r_v<void, F, listener<void>&>,
                       "F must be invocable with a listener");
 
-        set_notify_raw([](wl_listener* l, void*) {
+        set_notify_raw([](ws::detail::listener* l, void*) {
             listener<void>& self = *static_cast<listener<void>*>(l);
 
             F& fn = reinterpret_cast<F&>(self);

@@ -48,7 +48,7 @@
           shellHook = ''
             cat << EOF > .ccls
             %compile_commands.json
-            %cpp -std=c++17
+            %cpp -std=c++14
             -Iinclude
             -I${pkgs.wayland}/include 
             EOF

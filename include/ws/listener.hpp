@@ -7,6 +7,95 @@
 
 namespace ws
 {
+namespace detail
+{
+template<typename T>
+struct voidify_t
+{
+    void* operator()(T t) const noexcept
+    {
+        static_assert(sizeof(T) <= sizeof(void*), "Cannot convert T to void*");
+        return const_cast<void*>(reinterpret_cast<const void*>(t));
+    }
+};
+
+template<typename T>
+struct voidify_t<T*>
+{
+    void* operator()(T* p) const noexcept
+    {
+        return const_cast<void*>(static_cast<const void*>(p));
+    }
+};
+
+template<typename T>
+struct voidify_t<T&>
+{
+    void* operator()(T& ref) const noexcept
+    {
+        return const_cast<void*>(static_cast<const void*>(std::addressof(ref)));
+    }
+};
+
+template<typename T>
+struct voidify_t<T&&>
+{
+    void* operator()(T&& ref) const noexcept
+    {
+        return const_cast<void*>(static_cast<const void*>(std::addressof(ref)));
+    }
+};
+
+template<typename T>
+void* voidify(T arg) noexcept
+{
+    return voidify_t<T>{}(static_cast<T&&>(arg));
+}
+
+template<typename T>
+struct devoidify_t
+{
+    T operator()(void* p) const noexcept
+    {
+        static_assert(sizeof(T) <= sizeof(void*), "Cannot convert void* to T");
+        return reinterpret_cast<T>(p);
+    }
+};
+
+template<typename T>
+struct devoidify_t<T*>
+{
+    T* operator()(void* p) const noexcept
+    {
+        return static_cast<T*>(p);
+    }
+};
+
+template<typename T>
+struct devoidify_t<T&>
+{
+    T& operator()(void* p) const noexcept
+    {
+        return *static_cast<T*>(p);
+    }
+};
+
+template<typename T>
+struct devoidify_t<T&&>
+{
+    T&& operator()(void* p) const noexcept
+    {
+        return static_cast<T&&>(*static_cast<T*>(p));
+    }
+};
+
+template<typename T>
+T devoidify(void* p) noexcept
+{
+    return devoidify_t<T>{}(p);
+}
+} // namespace detail
+
 class listener_base : public ws::detail::listener
 {
 public:
@@ -65,7 +154,7 @@ template<typename T>
 class listener : public listener_base
 {
     static_assert(
-        std::is_reference_v<T> || sizeof(T) <= sizeof(void*),
+        std::is_reference<T>::value || sizeof(T) <= sizeof(void*),
         "Argument type must be a reference or less than the size of a pointer");
 
 public:
@@ -82,23 +171,7 @@ public:
 
     constexpr void invoke(T arg) noexcept
     {
-        void* void_ptr = [&]() noexcept->void*
-        {
-            if constexpr (std::is_reference_v<T>)
-            {
-                auto* p = std::addressof(arg);
-                return static_cast<void*>(p);
-            }
-            else if constexpr (std::is_pointer_v<T>)
-            {
-                return static_cast<void*>(arg);
-            }
-            else
-            {
-                return reinterpret_cast<void*>(arg);
-            }
-        }
-        ();
+        void* void_ptr = detail::voidify<T>(static_cast<T&&>(arg));
 
         this->notify(this, void_ptr);
     }
@@ -111,32 +184,18 @@ public:
     template<typename F>
     constexpr void set_notify(F fn) noexcept
     {
-        static_assert(std::is_empty_v<F>, "F may not carry state");
+        static_assert(std::is_empty<F>::value, "F may not carry state");
         static_assert(
-            std::is_trivially_destructible_v<F>,
+            std::is_trivially_destructible<F>::value,
             "F must be trivially destructible as no destructor will be run");
 
-        static_assert(std::is_invocable_r_v<void, F, listener<T>&, T>,
+        /*
+        static_assert(std::is_invocable_r<void, F, listener<T>&, T>::value,
                       "F must be invocable with a listener and data");
+        */
 
         set_notify_raw([](ws::detail::listener* l, void* data_ptr) {
-            T data = [&]() -> T {
-                if constexpr (std::is_reference_v<T>)
-                {
-                    using ptr_type =
-                        std::add_pointer_t<std::remove_reference_t<T>>;
-                    auto* p = static_cast<ptr_type>(data_ptr);
-                    return *p;
-                }
-                else if constexpr (std::is_pointer_v<T>)
-                {
-                    return static_cast<T>(data_ptr);
-                }
-                else
-                {
-                    return reinterpret_cast<T>(data_ptr);
-                }
-            }();
+            T data = detail::devoidify<T>(data_ptr);
 
             listener<T>& self = *static_cast<listener<T>*>(l);
 
@@ -172,12 +231,14 @@ public:
     template<typename F>
     constexpr void set_notify(F fn) noexcept
     {
-        static_assert(std::is_empty_v<F>, "F may not carry state");
+        static_assert(std::is_empty<F>::value, "F may not carry state");
         static_assert(
-            std::is_trivially_destructible_v<F>,
+            std::is_trivially_destructible<F>::value,
             "F must be trivially destructible as no destructor will be run");
-        static_assert(std::is_invocable_r_v<void, F, listener<void>&>,
+        /*
+        static_assert(std::is_invocable_r<void, F, listener<void>&>::value,
                       "F must be invocable with a listener");
+        */
 
         set_notify_raw([](ws::detail::listener* l, void*) {
             listener<void>& self = *static_cast<listener<void>*>(l);

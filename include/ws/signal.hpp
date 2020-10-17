@@ -9,7 +9,7 @@
 #include "ws/listener.hpp"
 
 #define WS_CONTAINER_OF(ref, ty, member)                                       \
-    *reinterpret_cast<ty*>(reinterpret_cast<std::byte*>(std::addressof(ref)) - \
+    *reinterpret_cast<ty*>(reinterpret_cast<char*>(std::addressof(ref)) - \
                            offsetof(ty, member))
 
 namespace ws
@@ -96,7 +96,7 @@ template<typename T>
 class signal : public signal_base
 {
     static_assert(
-        std::is_reference_v<T> || sizeof(T) <= sizeof(void*),
+		  std::is_reference<T>::value || sizeof(T) <= sizeof(void*),
         "Argument type must be a reference or less than the size of a pointer");
 
 public:
@@ -105,20 +105,7 @@ public:
 public:
     void emit(T arg) noexcept
     {
-        static_assert(!std::is_same_v<T, void>,
-                      "void means no argument is passed, use emit() instead");
-        if constexpr (std::is_reference_v<T>)
-        {
-            emit_raw(static_cast<void*>(std::addressof(arg)));
-        }
-        else if constexpr (std::is_pointer_v<T>)
-        {
-            emit_raw(static_cast<void*>(arg));
-        }
-        else
-        {
-            emit_raw(reinterpret_cast<void*>(arg));
-        }
+        emit_raw(detail::voidify<T>(static_cast<T&&>(arg)));
     }
 
     void operator()(T arg) noexcept

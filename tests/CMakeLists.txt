@@ -7,7 +7,7 @@ set(WAYLAND_TESTS
 find_package(Catch2 REQUIRED)
 
 find_package(ECM REQUIRED NO_MODULE)
-set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH}")
 
 find_package(Wayland REQUIRED Server)
 
@@ -31,11 +31,6 @@ foreach(t ${TESTS})
 endforeach()
 
 if(WAYSIG_BUILD_TESTS_WAYLAND)
-    find_package(ECM REQUIRED NO_MODULE)
-    set(CMAKE_MODULE_PATH "${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH}")
-
-    find_package(Wayland REQUIRED Server)
-
     foreach(t ${WAYLAND_TESTS})
         make_test(${t})
         target_link_libraries(${t} PRIVATE Wayland::Server)

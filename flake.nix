@@ -24,6 +24,9 @@
 
             nativeBuildInputs = [ cmake ];
 
+            cmakeFlags =
+              [ "-DWAYSIG_BUILD_TESTS=OFF" "-DWAYSIG_BUILD_TESTS_WAYLAND=OFF" ];
+
             meta = with stdenv.lib; {
               homepage = "https://github.com/dreyri/waysig";
               description =

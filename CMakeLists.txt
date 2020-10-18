@@ -25,7 +25,7 @@ find_package(PkgConfig)
 pkg_check_modules(WaylandServer IMPORTED_TARGET wayland-server)
 
 add_library(waysig_wl INTERFACE)
-add_library(waysig::wl ALIAS waysig_wl)
+add_library(waysig::waysig_wl ALIAS waysig_wl)
 target_compile_features(waysig_wl INTERFACE cxx_std_11)
 target_compile_definitions(waysig_wl INTERFACE WAYSIG_ENABLE_WL)
 target_link_libraries(waysig_wl INTERFACE PkgConfig::WaylandServer)
@@ -41,7 +41,7 @@ write_basic_package_version_file(
   COMPATIBILITY AnyNewerVersion)
 
 install(
-  TARGETS ${PROJECT_NAME}
+  TARGETS waysig waysig_wl
   EXPORT ${PROJECT_NAME}Config)
 
 install(

@@ -1,5 +1,5 @@
 {
-  description = "Wayland signal/listener wrapper in c++";
+  description = "Wayland signal/listener wrapper for C++";
 
   inputs = { nixpkgs.url = "github:NixOS/nixpkgs"; };
 
@@ -33,7 +33,7 @@
             meta = with stdenv.lib; {
               homepage = "https://github.com/dreyri/waysig";
               description =
-                "C++ signal/slot implementation based on wl_signal/listener";
+                "Wayland signal/listener wrapper for C++";
               license = licenses.mit;
             };
           };

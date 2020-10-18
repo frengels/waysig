@@ -22,10 +22,13 @@
 
             src = ./.;
 
-            nativeBuildInputs = [ cmake ];
+            nativeBuildInputs = [ cmake catch2 pkg-config wayland ];
+
+	    doCheck = true;
+	    checkTarget = "test";
 
             cmakeFlags =
-              [ "-DWAYSIG_BUILD_TESTS=OFF" "-DWAYSIG_BUILD_TESTS_WAYLAND=OFF" ];
+              [ "-DWAYSIG_BUILD_TESTS=ON" "-DWAYSIG_BUILD_TESTS_WAYLAND=ON" ];
 
             meta = with stdenv.lib; {
               homepage = "https://github.com/dreyri/waysig";

@@ -5,10 +5,6 @@ project(waysig VERSION "0.2.0" LANGUAGES CXX)
 option(WAYSIG_BUILD_TESTS "Build waysig's unit tests" ON)
 option(WAYSIG_BUILD_TESTS_WAYLAND "Build waysig's test against the wayland abi" ON)
 
-if (WAYSIG_BUILD_TESTS)
-  enable_testing()
-  add_subdirectory(tests)
-endif()
 
 include(CMakePackageConfigHelpers)
 
@@ -34,6 +30,11 @@ target_include_directories(
   INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+
+if (WAYSIG_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
 
 write_basic_package_version_file(
   ${PROJECT_NAME}ConfigVersion.cmake

@@ -6,11 +6,6 @@ set(WAYLAND_TESTS
 
 find_package(Catch2 REQUIRED)
 
-find_package(ECM REQUIRED NO_MODULE)
-set(CMAKE_MODULE_PATH "${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH}")
-
-find_package(Wayland REQUIRED Server)
-
 add_library(catch2 STATIC catch2.cpp)
 target_link_libraries(catch2 PUBLIC Catch2::Catch2)
 
@@ -32,6 +27,6 @@ endforeach()
 if(WAYSIG_BUILD_TESTS_WAYLAND)
     foreach(t ${WAYLAND_TESTS})
         make_test(${t})
-        target_link_libraries(${t} PRIVATE Wayland::Server)
+	target_link_libraries(${t} PRIVATE PkgConfig::WaylandServer)
     endforeach()
 endif()

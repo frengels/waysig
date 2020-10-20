@@ -1,30 +1,14 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(waysig VERSION "0.2.0" LANGUAGES CXX)
+project(waysig VERSION "0.2.1" LANGUAGES CXX)
 
 option(WAYSIG_BUILD_TESTS "Build waysig's unit tests" ON)
 option(WAYSIG_BUILD_TESTS_WAYLAND "Build waysig's test against the wayland abi" ON)
 
-
-include(CMakePackageConfigHelpers)
-
-add_library(${PROJECT_NAME} INTERFACE)
-add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(waysig INTERFACE)
+add_library(waysig::waysig ALIAS waysig)
 target_include_directories(
-  ${PROJECT_NAME}
-  INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-
-find_package(PkgConfig)
-pkg_check_modules(WaylandServer IMPORTED_TARGET wayland-server)
-
-add_library(waysig_wl INTERFACE)
-add_library(waysig::waysig_wl ALIAS waysig_wl)
-target_compile_definitions(waysig_wl INTERFACE WAYSIG_ENABLE_WL)
-target_link_libraries(waysig_wl INTERFACE PkgConfig::WaylandServer)
-target_include_directories(
-  waysig_wl
+  waysig
   INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
@@ -34,23 +18,37 @@ if (WAYSIG_BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
+include(CMakePackageConfigHelpers)
+
 write_basic_package_version_file(
-  ${PROJECT_NAME}ConfigVersion.cmake
+  waysig-config-version.cmake
   VERSION ${PROJECT_VERSION}
   COMPATIBILITY AnyNewerVersion)
 
-install(
-  TARGETS waysig waysig_wl
-  EXPORT ${PROJECT_NAME}Config)
+set(WAYSIG_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/waysig)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/waysig-config.cmake.in waysig-config.cmake @ONLY)
+configure_package_config_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/waysig-config.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/waysig-config.cmake"
+  INSTALL_DESTINATION ${WAYSIG_CMAKE_DIR}
+  NO_SET_AND_CHECK_MACRO
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-  DESTINATION lib/cmake/${PROJECT_NAME})
+  TARGETS waysig
+  EXPORT waysig-targets)
 
 install(
-  EXPORT ${PROJECT_NAME}Config
-  NAMESPACE ${PROJECT_NAME}::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/waysig-config-version.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/waysig-config.cmake"
+  DESTINATION ${WAYSIG_CMAKE_DIR})
+
+install(
+  EXPORT waysig-targets
+  FILE waysig-targets.cmake
+  NAMESPACE waysig::
+  DESTINATION ${WAYSIG_CMAKE_DIR})
 
 install(
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include

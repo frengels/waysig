@@ -2,7 +2,6 @@
 
 #include <type_traits>
 
-#undef WAYSIG_ENABLE_WL
 #include <ws/listener.hpp>
 #include <ws/signal.hpp>
 
@@ -36,5 +35,18 @@ TEST_CASE("wayland")
             static_assert(offsetof(ws::detail::signal, listener_list) ==
                           offsetof(wl_signal, listener_list));
         }
+
+	SECTION("derived")
+	{
+#ifdef WAYSIG_ENABLE_WL
+	   static_assert(std::is_base_of<wl_list, ws::detail::list>::value);
+	   static_assert(std::is_base_of<wl_signal, ws::detail::signal>::value);
+	   static_assert(std::is_base_of<wl_listener, ws::detail::listener>::value);
+#else
+	   static_assert(!std::is_base_of<wl_list, ws::detail::list>::value);
+	   static_assert(!std::is_base_of<wl_signal, ws::detail::signal>::value);
+	   static_assert(!std::is_base_of<wl_listener, ws::detail::listener>::value);
+#endif
+	}
     }
 }

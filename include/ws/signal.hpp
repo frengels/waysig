@@ -7,11 +7,7 @@
 #include "ws/detail/config.hpp"
 
 #include "ws/listener.hpp"
-
-#define WS_CONTAINER_OF(ref, ty, mem)                                          \
-    const_cast<ty&>(*reinterpret_cast<const volatile ty*>(                     \
-        reinterpret_cast<const volatile char*>(__builtin_addressof(ref)) -     \
-        __builtin_offsetof(ty, mem)))
+#include "ws/container_of.hpp"
 
 namespace ws
 {

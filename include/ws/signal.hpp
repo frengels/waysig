@@ -9,8 +9,8 @@
 #include "ws/listener.hpp"
 
 #define WS_CONTAINER_OF(ref, ty, member)                                       \
-    *reinterpret_cast<ty*>(reinterpret_cast<char*>(std::addressof(ref)) - \
-                           offsetof(ty, member))
+    (*reinterpret_cast<ty*>(reinterpret_cast<char*>(std::addressof(ref)) -     \
+                            offsetof(ty, member)))
 
 namespace ws
 {
@@ -96,7 +96,7 @@ template<typename T>
 class signal : public signal_base
 {
     static_assert(
-		  std::is_reference<T>::value || sizeof(T) <= sizeof(void*),
+        std::is_reference<T>::value || sizeof(T) <= sizeof(void*),
         "Argument type must be a reference or less than the size of a pointer");
 
 public:

@@ -8,9 +8,10 @@
 
 #include "ws/listener.hpp"
 
-#define WS_CONTAINER_OF(ref, ty, member)                                       \
-    (*reinterpret_cast<ty*>(reinterpret_cast<char*>(std::addressof(ref)) -     \
-                            offsetof(ty, member)))
+#define WS_CONTAINER_OF(ref, ty, mem)                                          \
+    const_cast<ty&>(*reinterpret_cast<const volatile ty*>(                     \
+        reinterpret_cast<const volatile char*>(__builtin_addressof(ref)) -     \
+        __builtin_offsetof(ty, mem)))
 
 namespace ws
 {

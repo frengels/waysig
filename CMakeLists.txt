@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(waysig VERSION "0.3.0" LANGUAGES CXX)
+project(waysig VERSION "0.3.1" LANGUAGES CXX)
 
 option(WAYSIG_BUILD_TESTS "Build waysig's unit tests" ON)
 option(WAYSIG_BUILD_TESTS_WAYLAND "Build waysig's test against the wayland abi" ON)

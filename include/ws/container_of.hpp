@@ -25,3 +25,8 @@ U& container_of(T& ref, T U::*mem) noexcept
     return const_cast<U&>(*reinterpret_cast<const volatile U*>(p));
 }
 } // namespace ws
+
+#define WS_CONTAINER_OF(ref, ty, member)                                       \
+    const_cast<ty&>(*reinterpret_cast<const volatile ty*>(                     \
+        reinterpret_cast<const volatile char*>(__builtin_addressof(ref)) -     \
+        offsetof(ty, member)))

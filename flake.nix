@@ -18,22 +18,21 @@
         waysig = with final;
           stdenv.mkDerivation rec {
             name = "waysig-${version}";
-            version = "0.2.1";
+            version = "0.3.0";
 
             src = ./.;
 
             nativeBuildInputs = [ cmake catch2 pkg-config wayland ];
 
-	    doCheck = true;
-	    checkTarget = "test";
+            doCheck = true;
+            checkTarget = "test";
 
             cmakeFlags =
               [ "-DWAYSIG_BUILD_TESTS=ON" "-DWAYSIG_BUILD_TESTS_WAYLAND=ON" ];
 
             meta = with stdenv.lib; {
               homepage = "https://github.com/dreyri/waysig";
-              description =
-                "Wayland signal/listener wrapper for C++";
+              description = "Wayland signal/listener wrapper for C++";
               license = licenses.mit;
             };
           };

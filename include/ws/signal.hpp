@@ -6,8 +6,8 @@
 
 #include "ws/detail/config.hpp"
 
-#include "ws/listener.hpp"
 #include "ws/container_of.hpp"
+#include "ws/listener.hpp"
 
 namespace ws
 {
@@ -80,8 +80,7 @@ protected:
 
         while (current != end)
         {
-            auto& listen =
-                WS_CONTAINER_OF(*current, ws::detail::listener, link);
+            auto& listen = ws::detail::listener_from_link(*current);
             listen.notify(&listen, p);
             current = next;
             next    = current->next;

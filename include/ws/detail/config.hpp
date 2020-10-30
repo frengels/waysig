@@ -1,8 +1,12 @@
 #pragma once
 
+#include <cstddef>
+
 #ifdef WAYSIG_ENABLE_WL
 #include <wayland-server-core.h>
 #endif
+
+#include "ws/container_of.hpp"
 
 namespace ws
 {
@@ -38,5 +42,13 @@ using listener = wl_listener;
 
 using signal = wl_signal;
 #endif
+
+listener& listener_from_link(list& link) noexcept
+{
+    constexpr std::size_t offset = offsetof(listener, link);
+
+    return const_cast<listener&>(*reinterpret_cast<const volatile listener*>(
+        reinterpret_cast<const volatile char*>(&link) - offset));
+}
 } // namespace detail
 } // namespace ws

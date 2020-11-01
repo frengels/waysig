@@ -43,7 +43,7 @@ using listener = wl_listener;
 using signal = wl_signal;
 #endif
 
-listener& listener_from_link(list& link) noexcept
+static inline listener& listener_from_link(list& link) noexcept
 {
     constexpr std::size_t offset = offsetof(listener, link);
 

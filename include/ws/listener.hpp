@@ -212,6 +212,8 @@ class listener<void> : public listener_base
 public:
     using listener_base::listener_base;
 
+    using value_type = void;
+
     template<typename F>
     listener(F fn) noexcept
     {
